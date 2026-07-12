@@ -1,0 +1,11 @@
+.card { display: flex; align-items: center; gap: 11px; padding: 13px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); }
+.fileIcon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: #a78bfa; background: rgba(124, 58, 237, .15); }
+.details { display: grid; min-width: 0; gap: 3px; flex: 1; }
+.details strong { overflow: hidden; color: var(--text); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.details span { color: var(--text-secondary); font-size: 12px; }
+.status { padding: 5px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.indexed { color: #86efac; background: rgba(34, 197, 94, .14); }
+.processing { color: #93c5fd; background: rgba(59, 130, 246, .14); }
+.failed { color: #fca5a5; background: rgba(239, 68, 68, .14); }
+.deleteButton { display: grid; width: 30px; height: 30px; place-items: center; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); }
+.deleteButton:hover { color: #fca5a5; background: rgba(239, 68, 68, .12); }

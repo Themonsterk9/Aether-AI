@@ -1,0 +1,22 @@
+.wrapper {
+    display: grid;
+    gap: 12px;
+    padding: 24px;
+    width: 100%;
+}
+
+.bar {
+    height: 16px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.28);
+}
+
+.bar:nth-child(2) {
+    width: 72%;
+    background: rgba(148, 163, 184, 0.2);
+}
+
+.bar:nth-child(3) {
+    width: 48%;
+    background: rgba(148, 163, 184, 0.18);
+}

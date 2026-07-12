@@ -1,0 +1,45 @@
+:root {
+
+    /* ── Core backgrounds ───────────────────────────── */
+    --bg:            #0B1120;
+    --bg-primary:    #0B1120;     /* alias */
+    --sidebar:       #111827;
+    --surface:       #1E293B;
+    --surface-light: #273449;
+
+    /* ── Borders ────────────────────────────────────── */
+    --border:        #334155;
+
+    /* ── Text ───────────────────────────────────────── */
+    --text:          #F8FAFC;
+    --text-primary:  #F8FAFC;     /* alias */
+    --text-secondary:#94A3B8;
+    --text-muted:    #94A3B8;     /* alias */
+
+    /* ── Brand colors ───────────────────────────────── */
+    --primary:  #7C3AED;
+    --secondary:#2563EB;
+    --accent:   #06B6D4;
+
+    /* ── Status colors ──────────────────────────────── */
+    --success:  #22C55E;
+    --danger:   #EF4444;
+    --warning:  #F59E0B;
+
+    /* ── Gradient ───────────────────────────────────── */
+    --gradient: linear-gradient(135deg, #7C3AED, #2563EB, #06B6D4);
+
+    /* ── Border radius tokens ───────────────────────── */
+    --radius-xs:  6px;
+    --radius-sm:  8px;
+    --radius-md:  12px;
+    --radius-lg:  16px;
+    --radius-xl:  20px;
+    --radius-full:999px;
+
+    /* ── Shadow tokens ──────────────────────────────── */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.45);
+
+}

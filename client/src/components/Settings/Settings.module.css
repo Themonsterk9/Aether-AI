@@ -1,0 +1,75 @@
+.overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.5);
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    z-index:999;
+
+}
+
+.panel{
+
+    width:420px;
+
+    height:100vh;
+
+    background:var(--sidebar);
+
+    padding:28px;
+
+    overflow:auto;
+
+    border-left:1px solid var(--border);
+
+}
+
+.title{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:30px;
+
+}
+
+.section{
+
+    margin-bottom:30px;
+
+}
+
+.section h3{
+
+    margin-bottom:16px;
+
+}
+
+.row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:14px;
+
+}
+
+.card{
+
+    background:var(--surface);
+
+    border-radius:14px;
+
+    padding:16px;
+
+}

@@ -1,0 +1,77 @@
+.shell {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--bg);
+    position: relative;
+}
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgba(2, 6, 23, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.mainPane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sidebarWrap {
+    flex: 0 0 300px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.knowledgeWrap {
+    flex: 0 0 340px;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Tablet/Laptop viewport sizes */
+@media (max-width: 1199px) {
+    .sidebarWrap {
+        flex: 0 0 280px;
+    }
+
+    /* Knowledge panel becomes an overlay drawer */
+    .knowledgeWrap {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        width: 340px;
+        background: var(--sidebar);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Mobile viewport sizes */
+@media (max-width: 991px) {
+    /* Sidebar becomes an overlay drawer */
+    .sidebarWrap {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 30;
+        width: 280px;
+        background: var(--sidebar);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Knowledge panel drawer fits smaller screens */
+    .knowledgeWrap {
+        width: min(100%, 340px);
+    }
+}

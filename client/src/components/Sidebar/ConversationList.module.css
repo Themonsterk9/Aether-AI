@@ -1,0 +1,83 @@
+.list {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 18px;
+
+}
+
+/* ── Search ──────────────────────────────────────── */
+.searchWrapper {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 7px 10px 7px 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.searchInput::placeholder {
+    color: var(--text-secondary);
+}
+
+.searchInput:focus {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(99, 102, 241, 0.06);
+}
+
+/* hide the native "×" clear button in WebKit */
+.searchInput::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+/* ── Groups ──────────────────────────────────────── */
+.section {
+
+    margin-bottom: 24px;
+
+}
+
+.sectionTitle {
+
+    color: var(--text-secondary);
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 12px;
+
+    font-weight: 600;
+
+}
+
+.empty {
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 8px;
+    font-style: italic;
+}

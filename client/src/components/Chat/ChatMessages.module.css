@@ -1,0 +1,73 @@
+.messages{
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding:32px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:28px;
+
+    background:var(--bg);
+
+    /* needed so the absolute scroll button is positioned relative to this element */
+    position: relative;
+
+}
+
+@media (max-width: 991px) {
+    .messages { padding: 24px 20px; }
+}
+
+@media (max-width: 767px) {
+    .messages { padding: 16px 14px; gap: 20px; }
+}
+
+.messages::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+.messages::-webkit-scrollbar-thumb{
+
+    background:var(--surface-light);
+
+    border-radius:999px;
+
+}
+
+/* ── Scroll-to-bottom button ───────────────────────── */
+.scrollBtn {
+    position: sticky;
+    bottom: 16px;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--surface, rgba(30, 32, 44, 0.95));
+    color: var(--text-primary);
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: background 0.2s, transform 0.15s, opacity 0.2s;
+    animation: fadeInUp 0.2s ease;
+    z-index: 10;
+}
+
+.scrollBtn:hover {
+    background: var(--accent, #6366f1);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

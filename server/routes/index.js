@@ -1,4 +1,5 @@
 const express = require("express");
+const { dbManager } = require("../config/database");
 
 const router = express.Router();
 
@@ -11,12 +12,20 @@ router.get("/", (req, res) => {
 });
 
 router.get("/health", (req, res) => {
-    res.json({
+    const health = dbManager.getHealthStatus();
+
+    if (!health.success) {
+        return res.status(503).json({
+            success: false,
+            database: health.database,
+            status: "disconnected"
+        });
+    }
+
+    return res.json({
         success: true,
-        database: "Connected",
-        ai: "Pending",
-        rag: "Pending",
-        learning: "Pending"
+        database: health.database,
+        status: "connected"
     });
 });
 
@@ -27,4 +36,5 @@ router.use("/knowledge", require("./knowledge.routes"));
 router.use("/memory", require("./memory.routes"));
 router.use("/learning", require("./learning.routes"));
 router.use("/settings", require("./settings.routes"));
+
 module.exports = router;

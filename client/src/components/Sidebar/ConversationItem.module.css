@@ -1,65 +1,72 @@
 .item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    padding: 14px;
+    padding: 10px 12px;
     border: 1px solid transparent;
-    border-radius: 12px;
-    margin-bottom: 8px;
+    border-radius: var(--radius-md);
     background: transparent;
-    transition: .25s;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     text-align: left;
-    position: relative; /* Needed for absolute delete button positioning */
+    position: relative;
     box-sizing: border-box;
 }
 
 .item:hover {
-    background: rgba(255,255,255,.05);
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(139, 92, 246, 0.25);
 }
 
 .item:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--primary);
     outline-offset: -2px;
 }
 
 .active {
-    background: rgba(124,58,237,.20);
-    border: 1px solid rgba(124,58,237,.40);
+    background: rgba(139, 92, 246, 0.16) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.18) !important;
 }
 
 .icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--surface);
-    color: var(--accent);
+    color: var(--primary);
     flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.active .icon {
+    background: var(--primary);
+    color: #ffffff;
 }
 
 .content {
     flex: 1;
     overflow: hidden;
-    padding-right: 28px; /* Leave room for delete button on hover */
+    padding-right: 24px;
 }
 
 .title {
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .preview {
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -67,21 +74,21 @@
 
 .deleteButton {
     position: absolute;
-    right: 14px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-xs);
     border: none;
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s, background 0.2s, color 0.2s;
+    transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
     z-index: 2;
 }
 
@@ -89,7 +96,6 @@
     opacity: 1;
 }
 
-/* Always show if item is focused for accessibility keyboard navigation */
 .item:focus-within .deleteButton {
     opacity: 1;
 }

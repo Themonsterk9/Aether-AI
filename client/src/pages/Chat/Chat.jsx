@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import ChatLayout from "../../components/Chat/ChatLayout";
 import useChat from "../../hooks/useChat";
@@ -13,14 +14,12 @@ import SettingsDrawer from "../../components/Settings/SettingsDrawer";
 import styles from "./Chat.module.css";
 
 export default function Chat() {
-
-    const { handleNewChat } = useChat();
+    const { handleNewChat, messages } = useChat();
     const [isDocumentManagerOpen, setIsDocumentManagerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
     const [isSidebarDrawer, setIsSidebarDrawer] = useState(false);
-    const [isKnowledgeDrawer, setIsKnowledgeDrawer] = useState(false);
     const [knowledgeRefreshVersion, setKnowledgeRefreshVersion] = useState(0);
 
     const refreshKnowledge = useCallback(
@@ -37,9 +36,7 @@ export default function Chat() {
         const updateLayout = () => {
             const width = window.innerWidth;
             setIsSidebarDrawer(width < 992);
-            setIsKnowledgeDrawer(width < 1200);
             if (width >= 992) setIsSidebarOpen(false);
-            if (width >= 1200) setIsKnowledgeOpen(false);
         };
 
         updateLayout();
@@ -87,53 +84,73 @@ export default function Chat() {
     }, [handleNewChat, closeDrawers]);
 
     const showSidebar = !isSidebarDrawer || isSidebarOpen;
-    const showKnowledge = !isKnowledgeDrawer || isKnowledgeOpen;
-    const showOverlay = (isSidebarDrawer && isSidebarOpen) || (isKnowledgeDrawer && isKnowledgeOpen);
+    const showOverlay = (isSidebarDrawer && isSidebarOpen) || isKnowledgeOpen;
 
     return (
         <ChatLayout>
             <div className={styles.shell}>
-                {showSidebar && (
-                    <div className={styles.sidebarWrap}>
-                        <Sidebar
-                            onSettings={() => {
-                                setIsSettingsOpen(true);
-                                closeDrawers();
-                            }}
-                            onClose={() => setIsSidebarOpen(false)}
-                        />
-                    </div>
-                )}
+                <AnimatePresence>
+                    {showSidebar && (
+                        <motion.div
+                            className={styles.sidebarWrap}
+                            initial={isSidebarDrawer ? { x: "-100%" } : false}
+                            animate={{ x: 0 }}
+                            exit={isSidebarDrawer ? { x: "-100%" } : false}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        >
+                            <Sidebar
+                                onSettings={() => {
+                                    setIsSettingsOpen(true);
+                                    closeDrawers();
+                                }}
+                                onClose={isSidebarDrawer ? () => setIsSidebarOpen(false) : undefined}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <div className={styles.mainPane}>
                     <ChatHeader
                         onSettings={() => setIsSettingsOpen(true)}
                         onMenu={() => setIsSidebarOpen(true)}
-                        onKnowledge={() => setIsKnowledgeOpen(true)}
+                        onKnowledge={() => setIsKnowledgeOpen((prev) => !prev)}
                     />
 
-                    <ChatBody />
+                    <AnimatePresence mode="wait">
+                        <ChatBody key={messages.length > 0 ? "active-chat" : "welcome-dashboard"} onOpenSidebar={() => setIsSidebarOpen(true)} />
+                    </AnimatePresence>
 
-                    <ChatInput
-                        onUpload={() => setIsDocumentManagerOpen(true)}
-                        onSettings={() => setIsSettingsOpen(true)}
-                        onKnowledgeChange={refreshKnowledge}
-                    />
+                    {messages.length > 0 && (
+                        <ChatInput
+                            onUpload={() => setIsDocumentManagerOpen(true)}
+                            onSettings={() => setIsSettingsOpen(true)}
+                            onKnowledgeChange={refreshKnowledge}
+                        />
+                    )}
                 </div>
 
-                {showKnowledge && (
-                    <div className={styles.knowledgeWrap}>
-                        <KnowledgePanel
-                            onUpload={() => setIsDocumentManagerOpen(true)}
-                            onSettings={() => {
-                                setIsSettingsOpen(true);
-                                closeDrawers();
-                            }}
-                            onClose={() => setIsKnowledgeOpen(false)}
-                            refreshKey={knowledgeRefreshVersion}
-                        />
-                    </div>
-                )}
+                {/* Knowledge Panel Overlay Drawer */}
+                <AnimatePresence>
+                    {isKnowledgeOpen && (
+                        <motion.div
+                            className={styles.knowledgeDrawer}
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        >
+                            <KnowledgePanel
+                                onUpload={() => setIsDocumentManagerOpen(true)}
+                                onSettings={() => {
+                                    setIsSettingsOpen(true);
+                                    closeDrawers();
+                                }}
+                                onClose={() => setIsKnowledgeOpen(false)}
+                                refreshKey={knowledgeRefreshVersion}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {showOverlay && <div className={styles.backdrop} onClick={closeDrawers} />}
@@ -150,5 +167,4 @@ export default function Chat() {
             )}
         </ChatLayout>
     );
-
 }

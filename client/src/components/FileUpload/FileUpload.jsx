@@ -10,7 +10,7 @@ import UploadProgress from "./UploadProgress";
 import styles from "./FileUpload.module.css";
 import { uploadDropzoneVariants } from "../../animations";
 
-const acceptedExtensions = [".txt", ".md", ".pdf", ".docx"];
+const acceptedExtensions = [".txt", ".md", ".pdf", ".docx", ".csv", ".json"];
 const maximumSize = 20 * 1024 * 1024;
 
 export default function FileUpload({ onClose, onDocumentsChanged }) {

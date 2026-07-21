@@ -1,83 +1,82 @@
 .list {
-
     flex: 1;
-
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 16px;
     overflow-y: auto;
-
-    padding: 18px;
-
 }
 
-/* ── Search ──────────────────────────────────────── */
 .searchWrapper {
     position: relative;
-    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 .searchIcon {
     position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    font-size: 13px;
+    left: 11px;
+    color: var(--text-muted);
+    font-size: 14px;
     pointer-events: none;
 }
 
 .searchInput {
     width: 100%;
-    padding: 7px 10px 7px 30px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.05);
+    height: 36px;
+    padding: 6px 30px 6px 34px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: 13px;
-    outline: none;
-    box-sizing: border-box;
-    transition: border-color 0.2s, background 0.2s;
-}
-
-.searchInput::placeholder {
-    color: var(--text-secondary);
+    font-size: 12.5px;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .searchInput:focus {
-    border-color: rgba(99, 102, 241, 0.5);
-    background: rgba(99, 102, 241, 0.06);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
 }
 
-/* hide the native "×" clear button in WebKit */
-.searchInput::-webkit-search-cancel-button {
-    -webkit-appearance: none;
+.searchInput::placeholder {
+    color: var(--text-muted);
 }
 
-/* ── Groups ──────────────────────────────────────── */
-.section {
-
-    margin-bottom: 24px;
-
+.clearSearchBtn {
+    position: absolute;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
 }
 
-.sectionTitle {
-
-    color: var(--text-secondary);
-
-    font-size: 12px;
-
-    text-transform: uppercase;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 12px;
-
-    font-weight: 600;
-
+.clearSearchBtn:hover {
+    color: var(--text-primary);
 }
 
 .empty {
-    color: var(--text-secondary);
-    font-size: 13px;
+    padding: 24px 16px;
     text-align: center;
-    padding: 24px 8px;
-    font-style: italic;
-}
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.sectionTitle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 2px 6px 4px;
+}

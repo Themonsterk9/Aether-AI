@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
 
+        documentMode: {
+            type: String,
+            enum: ["automatic", "strict"],
+            default: "automatic"
+        },
+
         isActive: {
             type: Boolean,
             default: true

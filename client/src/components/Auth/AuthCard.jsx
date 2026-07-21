@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { RiRobot2Line } from "react-icons/ri";
+import AetherLogo from "../Common/AetherLogo";
 import { FiArrowLeft } from "react-icons/fi";
 import styles from "./AuthCard.module.css";
 
@@ -20,9 +20,7 @@ export default function AuthCard({ title, subtitle, error, children, footerLinkT
 
                 {/* Logo */}
                 <div className={styles.logoContainer}>
-                    <div className={styles.logoIcon}>
-                        <RiRobot2Line size={28} />
-                    </div>
+                    <AetherLogo size={64} />
                     <h2 className={styles.brandTitle}>Aether AI</h2>
                     <span className={styles.brandSub}>Local AI Assistant</span>
                 </div>

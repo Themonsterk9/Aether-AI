@@ -1,27 +1,23 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-
-import styles from "./ChatMessage.module.css";
-
 import { AiOutlineDislike, AiOutlineLike } from "react-icons/ai";
 import { BsArrowClockwise } from "react-icons/bs";
-import { FiCheck, FiCopy } from "react-icons/fi";
-import { RiRobot2Line } from "react-icons/ri";
+import { FiCheck, FiCopy, FiFileText } from "react-icons/fi";
+import AetherLogo from "../Common/AetherLogo";
 
 import useAuth from "../../hooks/useAuth";
 import useChat from "../../hooks/useChat";
 import Markdown from "../Markdown/Markdown";
 import { messageVariants } from "../../animations";
+import styles from "./ChatMessage.module.css";
 
 function ChatMessage({ message, isLast = false, isStreaming = false }) {
-
     const [copied, setCopied] = useState(false);
-    const [feedback, setFeedback] = useState(null); // 'like', 'dislike', or null
-    
+    const [feedback, setFeedback] = useState(null);
+
     const { user } = useAuth();
     const { regenerateResponse } = useChat();
 
-    // Derived values — only recomputed when their inputs change
     const isUser = useMemo(() => message.role === "user", [message.role]);
 
     const userInitial = useMemo(
@@ -37,7 +33,6 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
         });
     }, [message.createdAt]);
 
-    // Stable event handler — does not recreate unless `message.content` changes
     const copyMessage = useCallback(async () => {
         if (!message.content) return;
         await navigator.clipboard?.writeText(message.content);
@@ -53,9 +48,8 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
             animate={messageVariants.animate}
             transition={messageVariants.transition}
         >
-
             <div className={styles.avatar} aria-label={isUser ? "You" : "Aether AI"}>
-                {isUser ? userInitial : <RiRobot2Line size={20} />}
+                {isUser ? userInitial : <AetherLogo size={24} animated={false} />}
             </div>
 
             <div className={styles.content}>
@@ -63,6 +57,13 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
                     <span>{isUser ? "You" : "Aether AI"}</span>
                     {timestamp && <time>{timestamp}</time>}
                 </div>
+
+                {!isUser && message.status && (
+                    <div className={styles.statusBadge}>
+                        <FiFileText size={13} />
+                        <span>{message.status}</span>
+                    </div>
+                )}
 
                 <div className={styles.bubble} role={isUser ? "article" : "status"} aria-live={isStreaming ? "polite" : undefined}>
                     {message.content ? <Markdown>{message.content}</Markdown> : null}
@@ -83,8 +84,8 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
                                     <span>Regenerate</span>
                                 </button>
                             )}
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 title="Helpful"
                                 onClick={() => setFeedback(feedback === "like" ? null : "like")}
                                 style={feedback === "like" ? { color: "var(--accent)" } : {}}
@@ -92,8 +93,8 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
                                 <AiOutlineLike />
                                 <span>Like</span>
                             </button>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 title="Not helpful"
                                 onClick={() => setFeedback(feedback === "dislike" ? null : "dislike")}
                                 style={feedback === "dislike" ? { color: "#ef4444" } : {}}
@@ -105,10 +106,8 @@ function ChatMessage({ message, isLast = false, isStreaming = false }) {
                     )}
                 </div>
             </div>
-
         </motion.article>
     );
-
 }
 
 export default memo(ChatMessage);

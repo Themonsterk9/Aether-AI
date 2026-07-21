@@ -1,48 +1,58 @@
 @import "./variables.css";
 
-*{
-
-    margin:0;
-
-    padding:0;
-
-    box-sizing:border-box;
-
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html,
 body,
-#root{
-
-    width:100%;
-
-    height:100%;
-
+#root {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
 }
 
-body{
-
-    margin:0;
-
-    background:var(--bg);
-
-    color:var(--text);
-
-    font-family:"Inter",sans-serif;
-
-    -webkit-font-smoothing:antialiased;
-
-    -moz-osx-font-smoothing:grayscale;
-
+body {
+    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg);
 }
-button{
 
-    cursor:pointer;
+::selection {
+    background: rgba(139, 92, 246, 0.35);
+    color: #ffffff;
+}
 
-    font-family:inherit;
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
 
-    min-height:44px;
+::-webkit-scrollbar-track {
+    background: transparent;
+}
 
+::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.4);
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    background: none;
 }
 
 button:focus-visible,
@@ -57,35 +67,25 @@ a:focus-visible,
 }
 
 input,
-textarea{
-
-    font-family:inherit;
-
-    outline:none;
-
+textarea {
+    font-family: inherit;
+    outline: none;
+    border: none;
 }
 
-a{
-
-    color:inherit;
-
-    text-decoration:none;
-
+a {
+    color: inherit;
+    text-decoration: none;
 }
 
-img{
-
-    max-width:100%;
-
-    height:auto;
-
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 table,
-pre{
-
-    overflow-x:auto;
-
+pre {
+    overflow-x: auto;
 }
 
 @media (max-width: 767px) {

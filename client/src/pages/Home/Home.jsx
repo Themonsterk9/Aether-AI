@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { RiRobot2Line } from "react-icons/ri";
+import AetherLogo from "../../components/Common/AetherLogo";
 import { LuBrain } from "react-icons/lu";
 import { TbDatabase } from "react-icons/tb";
 import { HiSparkles } from "react-icons/hi2";
@@ -73,9 +73,7 @@ export default function Home() {
             <nav className={styles.nav}>
                 <div className={styles.navInner}>
                     <Link to="/" className={styles.navLogo}>
-                        <div className={styles.navLogoIcon}>
-                            <RiRobot2Line size={22} />
-                        </div>
+                        <AetherLogo size={32} />
                         <div className={styles.navBrandText}>
                             <span className={styles.navBrand}>Aether AI</span>
                             <span className={styles.navSub}>Local AI Assistant</span>

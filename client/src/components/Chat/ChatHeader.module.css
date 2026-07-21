@@ -1,132 +1,381 @@
 .header {
+    height: 64px;
+    width: 100%;
+    padding: 0 24px;
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding: 16px 28px;
-
-    background: var(--sidebar);
+    justify-content: space-between;
+    background: rgba(12, 13, 20, 0.7);
     border-bottom: 1px solid var(--border);
-}
-
-.identity,
-.capabilities,
-.statusArea,
-.badge,
-.connection {
-    display: flex;
-    align-items: center;
+    backdrop-filter: var(--glass-blur);
+    z-index: 50;
 }
 
 .identity {
+    display: flex;
+    align-items: center;
     gap: 12px;
-    min-width: max-content;
 }
 
-.robotIcon {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    place-items: center;
+.menuButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    transition: background 0.2s ease, color 0.2s ease;
+}
 
-    border-radius: 14px;
-    color: white;
+.menuButton:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--text-primary);
+}
+
+.logoBadge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
     background: var(--gradient);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, .28);
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.3);
 }
 
-.identity h1 {
+.titleArea {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.brandTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
     margin: 0;
-    color: var(--text);
-    font-size: 18px;
     line-height: 1.2;
 }
 
-.identity p {
-    margin: 3px 0 0;
+.subTitle {
+    font-size: 11px;
     color: var(--text-secondary);
-    font-size: 12px;
+    font-weight: 500;
 }
 
-.capabilities {
-    gap: 8px;
-    flex-wrap: wrap;
+/* ── Right Actions ───────────────────────── */
+.rightActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.badge {
-    gap: 6px;
-    padding: 7px 10px;
-
-    border: 1px solid rgba(124, 58, 237, .3);
-    border-radius: 999px;
-    background: rgba(124, 58, 237, .12);
-    color: var(--text-secondary);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge svg {
-    color: #a78bfa;
-}
-
-.statusArea {
-    gap: 12px;
-    margin-left: auto;
-    color: var(--text-secondary);
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-.connection {
-    gap: 7px;
-    color: #86efac;
-    font-weight: 600;
-}
-
-.connection span {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--success);
-    box-shadow: 0 0 0 4px rgba(34, 197, 94, .13);
-}
-
-.iconButton,
-.settingsButton {
-    display: grid;
-    width: 40px;
-    height: 40px;
-    place-items: center;
-
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text-secondary);
-}
-
-.iconButton:hover,
-.settingsButton:hover {
+.iconButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
     background: var(--surface);
-    color: var(--text);
-}
-
-.version {
+    border: 1px solid var(--border);
     color: var(--text-secondary);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-@media (max-width: 980px) {
-    .capabilities { display: none; }
+.iconButton:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
 }
 
-@media (max-width: 700px) {
-    .header { padding: 14px 16px; gap: 12px; }
-    .connection, .version { display: none; }
-    .identity h1 { font-size: 16px; }
-    .identity p { display: none; }
-    .statusArea { gap: 8px; }
+.badgeCount {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
 }
 
-@media (max-width: 480px) {
-    .header { flex-wrap: wrap; }
-    .statusArea { margin-left: 0; width: 100%; justify-content: flex-end; }
-    .capabilities { display: none; }
+/* ── Dropdowns ───────────────────────────── */
+.dropdownContainer {
+    position: relative;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 320px;
+    background: #11121a;
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), var(--purple-glow);
+    padding: 12px;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+}
+
+.dropdownHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px 12px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.markReadBtn {
+    font-size: 11px;
+    color: var(--primary);
+    background: transparent;
+    transition: color 0.2s ease;
+}
+
+.markReadBtn:hover {
+    color: var(--accent);
+}
+
+.notifList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.emptyNotif {
+    padding: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.notifItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s ease;
+}
+
+.unreadItem {
+    background: rgba(139, 92, 246, 0.1);
+    border-left: 2px solid var(--primary);
+}
+
+.notifIconWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.notifBody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+}
+
+.notifTitleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.notifTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.notifTime {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.notifMessage {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* ── User Avatar Dropdown ────────────────── */
+.avatarButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 4px;
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.avatarButton:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+}
+
+.avatarCircle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+}
+
+.avatarName {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chevron {
+    color: var(--text-muted);
+}
+
+.dropdownMenuRight {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 240px;
+    background: #11121a;
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), var(--purple-glow);
+    padding: 12px;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.userCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 4px 10px;
+}
+
+.avatarLarge {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.userMeta {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.userNameText {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userEmailText {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.menuDivider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 4px 0;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menuItem:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--text-primary);
+}
+
+.dangerItem {
+    color: #f87171;
+}
+
+.dangerItem:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+@media (max-width: 600px) {
+    .header {
+        padding: 0 12px;
+    }
+    .subTitle {
+        display: none;
+    }
+    .avatarName {
+        display: none;
+    }
+    .avatarButton {
+        padding: 4px;
+    }
+    .chevron {
+        display: none;
+    }
 }

@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { FiFileText, FiSettings, FiX } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 import { LuBrain } from "react-icons/lu";
-import { RiRobot2Line } from "react-icons/ri";
+import AetherLogo from "../Common/AetherLogo";
 
 import AboutSection from "./AboutSection";
 import AISection from "./AISection";
@@ -15,7 +15,7 @@ import { drawerVariants } from "../../animations";
 
 const sections = [
     ["Appearance", <HiSparkles />, AppearanceSection],
-    ["AI", <RiRobot2Line />, AISection],
+    ["AI", <AetherLogo size={18} animated={false} key="ai" />, AISection],
     ["Intelligence", <LuBrain />, IntelligenceSection],
     ["Upload", <FiFileText />, UploadSection],
     ["About", <FiSettings />, AboutSection]

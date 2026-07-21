@@ -2,60 +2,55 @@ const memoryService = require("../memory/memory.service");
 const embeddingService = require("../embeddings/embedding.service");
 const learningService = require("../learning/learning.service");
 const Chat = require("../../models/chat.model");
+const User = require("../../models/User.model");
+const Setting = require("../../models/Setting.model");
 const aiService = require("../ai/ai.service");
 
 class ChatService {
-
     async createChat(userId) {
-
         const chat = await Chat.create({
             user: userId,
             title: "New Chat",
             messages: []
         });
-
         return chat;
-
     }
 
     async getChats(userId) {
-
-        return await Chat.find({
-            user: userId
-        }).sort({
-            updatedAt: -1
-        });
-
+        return await Chat.find({ user: userId }).sort({ updatedAt: -1 });
     }
 
     async getChat(chatId, userId) {
-
-        const chat = await Chat.findOne({
-            _id: chatId,
-            user: userId
-        });
-
+        const chat = await Chat.findOne({ _id: chatId, user: userId });
         if (!chat) {
             throw new Error("Chat not found");
         }
-
         return chat;
-
     }
 
-    async sendMessage(chatId, userId, message) {
+    formatSourceCitations(chunks) {
+        if (!chunks || chunks.length === 0) return "";
+        const seen = new Set();
+        const citations = [];
 
-        console.log("[ChatService.sendMessage] entered", {
-            chatId,
-            userId: String(userId),
-            message
+        chunks.forEach((item) => {
+            const fileName = item.fileName || "Uploaded Document";
+            const page = item.page || 1;
+            const chunkIdx = item.chunkIndex ?? 0;
+            const key = `${fileName}-p${page}-c${chunkIdx}`;
+
+            if (!seen.has(key)) {
+                seen.add(key);
+                citations.push(`- ${fileName} (Page ${page}, Chunk ${chunkIdx})`);
+            }
         });
 
-        const chat = await Chat.findOne({
-            _id: chatId,
-            user: userId
-        });
+        if (citations.length === 0) return "";
+        return `\n\n**Source:**\n${citations.join("\n")}`;
+    }
 
+    async prepareChatStreaming(chatId, userId, message) {
+        const chat = await Chat.findOne({ _id: chatId, user: userId });
         if (!chat) {
             throw new Error("Chat not found");
         }
@@ -66,166 +61,155 @@ class ChatService {
             content: message
         });
 
-        // Extract memory
-        const extractedMemory =
-            await memoryService.extractMemory(message);
+        // Get user setting / documentMode
+        const userDoc = await User.findById(userId);
+        const userSetting = await Setting.findOne({ user: userId });
+        const documentMode = userDoc?.documentMode || userSetting?.documentMode || "automatic";
 
-        console.log("[ChatService.sendMessage] memory extracted", {
-            userId: String(userId),
-            extractedMemory
-        });
+        // Priority 1: Search Uploaded Documents
+        const relevantChunks = await embeddingService.searchRelevantChunks(userId, message, 5);
+        const topScore = relevantChunks.length > 0 ? relevantChunks[0].score : 0;
+        const hasDocumentMatch = relevantChunks.length > 0 && topScore >= 0.35;
 
-        // Save memory if new
-        const savedMemory = await memoryService.saveExtractedMemory(
-            userId,
-            extractedMemory
-        );
+        // ==========================================
+        // STRICT DOCUMENT MODE
+        // ==========================================
+        if (documentMode === "strict") {
+            if (!hasDocumentMatch) {
+                return {
+                    chat,
+                    isStrictFallback: true,
+                    fallbackReply: "I couldn't find this information in your uploaded documents."
+                };
+            }
 
-        console.log("[ChatService.sendMessage] memory save result", {
-            userId: String(userId),
-            memoryId: savedMemory?._id?.toString() || null
-        });
+            const documentContext = relevantChunks
+                .map((item) => `[Doc: ${item.fileName || "Document"} | Page: ${item.page || 1} | Chunk: ${item.chunkIndex ?? 0}]\n${item.chunk}`)
+                .join("\n\n");
 
-        // Learn from explicit teaching
-        if (
-            learningService.shouldLearn(message)
-        ) {
+            const sourceCitations = this.formatSourceCitations(relevantChunks);
 
-            await learningService.learn(
-                userId,
-                message,
-                "user"
-            );
+            const strictSystemPrompt = `You are Aether AI operating in STRICT DOCUMENT MODE.
 
+UPLOADED DOCUMENT EXCERPTS (PRIMARY & ONLY KNOWLEDGE SOURCE):
+
+${documentContext}
+
+STRICT MODE INSTRUCTIONS:
+- You MUST answer the user's question using ONLY the provided uploaded document excerpts above.
+- Do NOT use long-term memories, learned knowledge, or outside general Llama knowledge.
+- If the uploaded document excerpts do not contain enough information to answer the question, state clearly: "I couldn't find this information in your uploaded documents."
+- Never hallucinate or invent information outside the uploaded document excerpts.`;
+
+            const conversation = [
+                { role: "system", content: strictSystemPrompt },
+                ...chat.messages.map((msg) => ({ role: msg.role, content: msg.content }))
+            ];
+
+            return {
+                chat,
+                conversation,
+                isDocumentAnswer: true,
+                sourceCitations
+            };
         }
 
-        // Build memory context
-        const memoryContext =
-            await memoryService.buildMemoryContext(
-                userId
-            );
+        // ==========================================
+        // AUTOMATIC DOCUMENT MODE
+        // ==========================================
+        // Extract Memory
+        const extractedMemory = await memoryService.extractMemory(message);
+        await memoryService.saveExtractedMemory(userId, extractedMemory);
 
-        console.log("MEMORY CONTEXT");
-        console.log(memoryContext);
+        // Explicit Learning
+        if (learningService.shouldLearn(message)) {
+            await learningService.learn(userId, message, "user");
+        }
 
-        // Retrieve document knowledge (RAG)
-        const relevantChunks =
-            await embeddingService.searchRelevantChunks(
-                userId,
-                message
-            );
+        // Priority 2: Long-Term Memory
+        const memoryContext = await memoryService.buildMemoryContext(userId);
 
-        // Retrieve learned knowledge
-        const learnedKnowledge =
-            await learningService.searchLearnedKnowledge(
-                userId,
-                message
-            );
+        // Priority 3: Learning Engine
+        const learnedKnowledge = await learningService.searchLearnedKnowledge(userId, message);
+        const learningContext = learnedKnowledge.length === 0
+            ? ""
+            : learnedKnowledge.map((item) => item.content).join("\n\n");
 
-        // Build knowledge context
-        const knowledgeContext =
-            relevantChunks.length === 0
-                ? ""
-                : relevantChunks
-                    .map(item => item.chunk)
-                    .join("\n\n");
+        let documentContext = "";
+        let sourceCitations = "";
 
-        console.log("KNOWLEDGE CONTEXT");
-        console.log(knowledgeContext);
+        if (hasDocumentMatch) {
+            documentContext = relevantChunks
+                .map((item) => `[Doc: ${item.fileName || "Document"} | Page: ${item.page || 1} | Chunk: ${item.chunkIndex ?? 0}]\n${item.chunk}`)
+                .join("\n\n");
 
-        // Build learning context
-        const learningContext =
-            learnedKnowledge.length === 0
-                ? ""
-                : learnedKnowledge
-                    .map(item => item.content)
-                    .join("\n\n");
+            sourceCitations = this.formatSourceCitations(relevantChunks);
+        }
 
-        const conversation = [];
+        let systemPrompt = `You are Aether AI, a highly capable AI assistant.\n\n`;
 
-        let systemPrompt = "";
+        if (hasDocumentMatch) {
+            systemPrompt += `PRIMARY UPLOADED DOCUMENTS KNOWLEDGE (HIGHEST PRIORITY):\n\n${documentContext}\n\n`;
+            systemPrompt += `CRITICAL INSTRUCTIONS:\n- The user has uploaded documents. Always answer using uploaded documents first.\n- If the uploaded documents contain the answer, do not ignore them.\n- If multiple uploaded documents contain relevant information, combine them.\n- If the document only partially answers, combine with Memory and Learning to provide a complete response.\n- Never hallucinate document content.\n\n`;
+        }
 
         if (memoryContext) {
-
-            systemPrompt +=
-`Long-term user memories:
-
-${memoryContext}
-
-`;
-
-        }
-
-        if (knowledgeContext) {
-
-            systemPrompt +=
-`Relevant knowledge retrieved from the knowledge base:
-
-${knowledgeContext}
-
-`;
-
+            systemPrompt += `Priority 2 - Long-Term User Memories:\n\n${memoryContext}\n\n`;
         }
 
         if (learningContext) {
-
-            systemPrompt +=
-`Learned knowledge:
-
-${learningContext}
-
-`;
-
+            systemPrompt += `Priority 3 - Learned Knowledge:\n\n${learningContext}\n\n`;
         }
 
-        systemPrompt +=
-`You are Aether AI, a friendly and intelligent AI assistant.
+        if (!hasDocumentMatch) {
+            systemPrompt += `No relevant uploaded document excerpts were found for this query. Answer using Memory, Learning, and general Llama 3.2 knowledge naturally.\n\n`;
+        }
 
-Use long-term memories when they are relevant.
+        const conversation = [
+            { role: "system", content: systemPrompt },
+            ...chat.messages.map((msg) => ({ role: msg.role, content: msg.content }))
+        ];
 
-Use the retrieved knowledge base when answering questions about uploaded documents.
+        return {
+            chat,
+            conversation,
+            isDocumentAnswer: hasDocumentMatch,
+            sourceCitations
+        };
+    }
 
-Use learned knowledge when it is relevant.
+    async sendMessage(chatId, userId, message) {
+        const prepared = await this.prepareChatStreaming(chatId, userId, message);
+        const { chat } = prepared;
 
-If the retrieved knowledge is not relevant, answer normally.
+        if (prepared.isStrictFallback) {
+            chat.messages.push({
+                role: "assistant",
+                content: prepared.fallbackReply
+            });
+            await chat.save();
+            return {
+                chatId: chat._id,
+                assistant: prepared.fallbackReply,
+                messages: chat.messages
+            };
+        }
 
-Do not invent information that is not supported by the retrieved knowledge when the user is asking about uploaded documents.`;
+        let assistantReply = await aiService.generateResponse(prepared.conversation);
 
-        conversation.push({
-            role: "system",
-            content: systemPrompt
-        });
+        if (prepared.isDocumentAnswer && prepared.sourceCitations) {
+            if (!assistantReply.includes("Source:")) {
+                assistantReply += prepared.sourceCitations;
+            }
+        }
 
-        conversation.push(
-            ...chat.messages.map(msg => ({
-                role: msg.role,
-                content: msg.content
-            }))
-        );
-
-        // Generate AI response
-        console.log("SYSTEM PROMPT");
-        console.log(systemPrompt);
-
-        const assistantReply =
-            await aiService.generateResponse(
-                conversation
-            );
-
-        // Save assistant response
         chat.messages.push({
             role: "assistant",
             content: assistantReply
         });
 
-        // Update title
-        if (
-            chat.title === "New Chat" &&
-            message.trim()
-        ) {
-
+        if (chat.title === "New Chat" && message.trim()) {
             chat.title = message.substring(0, 40);
-
         }
 
         await chat.save();
@@ -235,115 +219,15 @@ Do not invent information that is not supported by the retrieved knowledge when 
             assistant: assistantReply,
             messages: chat.messages
         };
-
-    }
-
-    async prepareChatStreaming(chatId, userId, message) {
-        const chat = await Chat.findOne({
-            _id: chatId,
-            user: userId
-        });
-
-        if (!chat) {
-            throw new Error("Chat not found");
-        }
-
-        // Save user message
-        chat.messages.push({
-            role: "user",
-            content: message
-        });
-
-        // Extract memory
-        const extractedMemory = await memoryService.extractMemory(message);
-
-        // Save memory if new
-        await memoryService.saveExtractedMemory(userId, extractedMemory);
-
-        // Learn from explicit teaching
-        if (learningService.shouldLearn(message)) {
-            await learningService.learn(userId, message, "user");
-        }
-
-        // Build memory context
-        const memoryContext = await memoryService.buildMemoryContext(userId);
-
-        // Retrieve document knowledge (RAG)
-        const relevantChunks = await embeddingService.searchRelevantChunks(userId, message);
-
-        // Retrieve learned knowledge
-        const learnedKnowledge = await learningService.searchLearnedKnowledge(userId, message);
-
-        // Build knowledge context
-        const knowledgeContext = relevantChunks.length === 0
-            ? ""
-            : relevantChunks.map(item => item.chunk).join("\n\n");
-
-        // Build learning context
-        const learningContext = learnedKnowledge.length === 0
-            ? ""
-            : learnedKnowledge.map(item => item.content).join("\n\n");
-
-        let systemPrompt = "";
-
-        if (memoryContext) {
-            systemPrompt += `Long-term user memories:\n\n${memoryContext}\n\n`;
-        }
-
-        if (knowledgeContext) {
-            systemPrompt += `Relevant knowledge retrieved from the knowledge base:\n\n${knowledgeContext}\n\n`;
-        }
-
-        if (learningContext) {
-            systemPrompt += `Learned knowledge:\n\n${learningContext}\n\n`;
-        }
-
-        systemPrompt += `You are Aether AI, a friendly and intelligent AI assistant.
-
-Use long-term memories when they are relevant.
-
-Use the retrieved knowledge base when answering questions about uploaded documents.
-
-Use learned knowledge when it is relevant.
-
-If the retrieved knowledge is not relevant, answer normally.
-
-Do not invent information that is not supported by the retrieved knowledge when the user is asking about uploaded documents.`;
-
-        const conversation = [
-            {
-                role: "system",
-                content: systemPrompt
-            },
-            ...chat.messages.map(msg => ({
-                role: msg.role,
-                content: msg.content
-            }))
-        ];
-
-        return {
-            chat,
-            conversation
-        };
     }
 
     async deleteChat(chatId, userId) {
-
-        const chat = await Chat.findOneAndDelete({
-            _id: chatId,
-            user: userId
-        });
-
+        const chat = await Chat.findOneAndDelete({ _id: chatId, user: userId });
         if (!chat) {
             throw new Error("Chat not found");
         }
-
-        return {
-            deleted: true
-        };
-
+        return { deleted: true };
     }
-
 }
 
 module.exports = new ChatService();

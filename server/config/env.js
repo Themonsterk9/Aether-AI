@@ -10,9 +10,9 @@ module.exports = {
 
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 
-    MODEL: process.env.MODEL || "gemini-2.5-flash",
+    MODEL: process.env.MODEL || "gemini-flash-latest",
 
-    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL || "text-embedding-004",
+    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL || "gemini-embedding-2",
 
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,

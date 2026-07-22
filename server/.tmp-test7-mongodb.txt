@@ -1,3 +1,0 @@
-MongoDB Guidance for Aether AI
-
-MongoDB can be Aether AI's primary database. It can store users, chats, long-term memories, learned knowledge, documents, and embedding vectors. Its flexible document model efficiently handles structured and semi-structured AI application data.

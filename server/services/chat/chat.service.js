@@ -97,7 +97,7 @@ ${documentContext}
 
 STRICT MODE INSTRUCTIONS:
 - You MUST answer the user's question using ONLY the provided uploaded document excerpts above.
-- Do NOT use long-term memories, learned knowledge, or outside general Llama knowledge.
+- Do NOT use long-term memories, learned knowledge, or outside general Gemini knowledge.
 - If the uploaded document excerpts do not contain enough information to answer the question, state clearly: "I couldn't find this information in your uploaded documents."
 - Never hallucinate or invent information outside the uploaded document excerpts.`;
 
@@ -162,7 +162,7 @@ STRICT MODE INSTRUCTIONS:
         }
 
         if (!hasDocumentMatch) {
-            systemPrompt += `No relevant uploaded document excerpts were found for this query. Answer using Memory, Learning, and general Llama 3.2 knowledge naturally.\n\n`;
+            systemPrompt += `No relevant uploaded document excerpts were found for this query. Answer using Memory, Learning, and general Gemini knowledge naturally.\n\n`;
         }
 
         const conversation = [

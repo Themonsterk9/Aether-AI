@@ -97,17 +97,16 @@ export default function Home() {
                     animate="visible"
                 >
                     <motion.div className={styles.heroBadge} variants={itemVariants}>
-                        <HiSparkles size={14} /> Powered by Ollama · 100% Local & Private
+                        <HiSparkles size={14} /> Powered by Google Gemini · Cloud Architecture
                     </motion.div>
 
                     <motion.h1 className={styles.heroHeading} variants={itemVariants}>
-                        Your Local AI,{" "}
-                        <span className={styles.gradient}>Completely Private</span>
+                        Your AI Assistant,{" "}
+                        <span className={styles.gradient}>Powered by Gemini</span>
                     </motion.h1>
 
                     <motion.p className={styles.heroSub} variants={itemVariants}>
-                        Chat with a powerful AI assistant that runs entirely on your machine.
-                        No cloud. No data leaks. Full control.
+                        Chat with a powerful AI assistant that handles long-term memory, continuous learning, and intelligent document indexing.
                     </motion.p>
 
                     {/* Capabilities bullets */}
@@ -149,7 +148,7 @@ export default function Home() {
 
             {/* ── Footer ───────────────────────────────── */}
             <footer className={styles.footer}>
-                <span>Powered by Ollama</span>
+                <span>Powered by Gemini</span>
                 <span className={styles.footerDot}>·</span>
                 <span>Open Source</span>
                 <span className={styles.footerDot}>·</span>

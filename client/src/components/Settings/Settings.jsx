@@ -46,7 +46,7 @@ export default function Settings({
 
                             <span>Model</span>
 
-                            <span>llama3.2</span>
+                            <span>gemini-flash-latest</span>
 
                         </div>
 
@@ -128,11 +128,11 @@ export default function Settings({
 
                         <br/>
 
-                        Local AI
+                        Cloud AI
 
                         <br/>
 
-                        Ollama
+                        Google Gemini
 
                     </div>
 

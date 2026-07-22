@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const api = axios.create({
-    baseURL: "http://localhost:5002/api/v1",
+    baseURL: import.meta.env.VITE_API_URL || "/api/v1",
     timeout: 30000, // 30 seconds network timeout
     headers: {
         "Content-Type": "application/json"
@@ -51,8 +51,8 @@ api.interceptors.response.use(
             console.error("Server Error:", error);
             const lowerMsg = msg.toLowerCase();
             
-            if (lowerMsg.includes("ollama") || lowerMsg.includes("llama")) {
-                toast.error("AI Error: Ollama instance is unreachable. Please make sure Ollama is running.");
+            if (lowerMsg.includes("gemini") || lowerMsg.includes("api key") || lowerMsg.includes("quota")) {
+                toast.error("AI Error: Gemini API is unreachable or invalid key. Please check backend environment variables.");
             } else if (lowerMsg.includes("mongo") || lowerMsg.includes("database") || lowerMsg.includes("connection")) {
                 toast.error("Database Error: MongoDB connection was interrupted or is unavailable.");
             } else {

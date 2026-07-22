@@ -4,7 +4,7 @@ import styles from "./KnowledgePanel.module.css";
 export default function SystemStatus({ system }) {
 
     const statuses = [
-        ["Ollama", system.ollama],
+        ["Gemini API", system.ollama],
         ["MongoDB", system.database],
         ["API", system.api],
         ["Authentication", system.authentication]

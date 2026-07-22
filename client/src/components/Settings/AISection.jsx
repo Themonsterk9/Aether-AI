@@ -10,11 +10,11 @@ export default function AISection() {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div className="settingsRow" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Primary LLM</span>
-                <strong><AetherLogo size={16} animated={false} /> llama3.2</strong>
+                <strong><AetherLogo size={16} animated={false} /> gemini-flash-latest</strong>
             </div>
             <div className="settingsRow" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Embedding Model</span>
-                <strong>nomic-embed-text</strong>
+                <strong>gemini-embedding-2</strong>
             </div>
 
             <div style={{ marginTop: "8px" }}>
@@ -45,7 +45,7 @@ export default function AISection() {
                         }}
                     >
                         <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><FiZap style={{ color: documentMode === "automatic" ? "var(--accent)" : "inherit" }} /> Automatic</span>
-                        <span style={{ fontSize: "10px", fontWeight: "400", opacity: 0.8 }}>Docs first, fallback to Llama</span>
+                        <span style={{ fontSize: "10px", fontWeight: "400", opacity: 0.8 }}>Docs first, fallback to Gemini</span>
                     </motion.button>
 
                     <motion.button

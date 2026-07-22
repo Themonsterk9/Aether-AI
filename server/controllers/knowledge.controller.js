@@ -33,7 +33,7 @@ class KnowledgeController {
                 Embedding.countDocuments({ user, document: { $exists: true } })
             ]);
 
-            let ollamaConnected = !!env.GEMINI_API_KEY;
+            let geminiConnected = !!env.GEMINI_API_KEY;
 
             return res.status(200).json({
                 success: true,
@@ -49,7 +49,7 @@ class KnowledgeController {
                     system: {
                         api: true,
                         database: mongoose.connection.readyState === 1,
-                        ollama: ollamaConnected,
+                        ollama: geminiConnected,
                         authentication: true
                     }
                 }

@@ -8,11 +8,11 @@ module.exports = {
 
     JWT_SECRET: process.env.JWT_SECRET,
 
-    OLLAMA_URL: process.env.OLLAMA_URL,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 
-    MODEL: process.env.MODEL,
+    MODEL: process.env.MODEL || "gemini-2.5-flash",
 
-    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL,
+    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL || "text-embedding-004",
 
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,

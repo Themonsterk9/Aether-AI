@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const ollama = require("ollama").default;
 
 const Document = require("../models/Document.model");
 const Embedding = require("../models/Embedding.model");
@@ -34,14 +33,7 @@ class KnowledgeController {
                 Embedding.countDocuments({ user, document: { $exists: true } })
             ]);
 
-            let ollamaConnected = false;
-
-            try {
-                await ollama.list();
-                ollamaConnected = true;
-            } catch {
-                ollamaConnected = false;
-            }
+            let ollamaConnected = !!env.GEMINI_API_KEY;
 
             return res.status(200).json({
                 success: true,

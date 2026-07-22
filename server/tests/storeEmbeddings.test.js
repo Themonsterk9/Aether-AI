@@ -18,7 +18,7 @@ const embeddingService = require("../services/embeddings/embedding.service");
     const embeddings =
         await embeddingService.storeDocumentEmbeddings(
             "6a4ea1498fdf6932596f45a9",
-            null,
+            "6a4ea1498fdf6932596f45a8",
             chunks
         );
 

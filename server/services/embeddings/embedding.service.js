@@ -1,27 +1,31 @@
-const ollama = require("ollama").default;
+const { GoogleGenAI } = require("@google/genai");
 const env = require("../../config/env");
 const Embedding = require("../../models/Embedding.model");
 
 class EmbeddingService {
+    constructor() {
+        this.ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+    }
+
     async generateEmbedding(text) {
-        const modelName = env.EMBEDDING_MODEL || "nomic-embed-text";
-        try {
-            const response = await ollama.embed({
+        const modelName = env.EMBEDDING_MODEL || "gemini-embedding-2";
+        const callApi = async () => {
+            return await this.ai.models.embedContent({
                 model: modelName,
-                input: text
+                contents: text
             });
-            return response.embeddings[0];
+        };
+
+        try {
+            const response = await callApi();
+            return response.embeddings[0].values;
         } catch (err) {
-            console.warn(`[EmbeddingService] Failed embedding with ${modelName}, trying fallback model:`, err.message);
-            // Fallback attempt
+            console.warn(`[EmbeddingService] Failed embedding with ${modelName}, retrying once. Error:`, err.message);
             try {
-                const response = await ollama.embed({
-                    model: "nomic-embed-text",
-                    input: text
-                });
-                return response.embeddings[0];
+                const response = await callApi();
+                return response.embeddings[0].values;
             } catch (fallbackErr) {
-                console.error("[EmbeddingService] Embedding generation failed:", fallbackErr.message);
+                console.error("[EmbeddingService] Embedding generation failed after retry:", fallbackErr.message);
                 throw fallbackErr;
             }
         }

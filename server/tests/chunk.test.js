@@ -13,8 +13,9 @@ Ollama runs models locally.
 
 `;
 
-const chunks = documentService.chunkText(
+const chunks = documentService.chunkTextWithMetadata(
     text,
+    "test.txt",
     60,
     20
 );

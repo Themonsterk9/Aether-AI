@@ -7,10 +7,29 @@ const env = require("./env");
 
 const app = express();
 
-// Hardened CORS Origin configuration
-const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+// Dynamic CORS Origin configuration supporting Vercel and localhost fallbacks
 app.use(cors({
-    origin: env.NODE_ENV === "production" ? allowedOrigin : true,
+    origin(origin, callback) {
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            process.env.CLIENT_URL,
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174"
+        ].filter(Boolean);
+
+        const isAllowed = allowedOrigins.includes(origin) || 
+                          origin.endsWith(".vercel.app") || 
+                          env.NODE_ENV !== "production";
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error("Blocked by CORS policy"));
+        }
+    },
     credentials: true
 }));
 

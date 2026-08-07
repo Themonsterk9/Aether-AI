@@ -72,7 +72,6 @@ router.post('/reset-password',
 
 // GET /email-health (diagnostic)
 router.get('/email-health', authController.emailHealth);
-router.get('/diag-smtp', authController.diagSmtp);
 
 // POST /dev-delete-user (testing)
 router.post('/dev-delete-user', authController.devDeleteUser);

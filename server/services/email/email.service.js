@@ -1,4 +1,3 @@
-const nodemailer = require('nodemailer');
 const https = require('https');
 
 const registrationOtpTemplate = require('./templates/registrationOtp.template');
@@ -10,114 +9,49 @@ const loginAlertTemplate = require('./templates/loginAlert.template');
 
 class EmailService {
     constructor() {
-        this.primaryTransporter = null;
-        this.fallbackTransporter = null;
-        this._initTransports();
+        this._initProvider();
     }
 
-    _initTransports() {
-        const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-        const smtpUser = process.env.SMTP_USER;
-        const smtpPass = process.env.SMTP_PASS;
+    _initProvider() {
+        const resendKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
+        const sendgridKey = process.env.SENDGRID_API_KEY;
 
-        console.log(`[EmailService] Initializing Production Email Transports...`);
-        console.log(`[EmailService] SMTP Host:   ${smtpHost}`);
-        console.log(`[EmailService] SMTP Port:   ${process.env.SMTP_PORT || '465 (SSL) / 587 (TLS)'}`);
-        console.log(`[EmailService] SMTP User:   ${smtpUser ? `${smtpUser.substring(0, 3)}***@${smtpUser.split('@')[1] || ''}` : 'NOT_CONFIGURED'}`);
-        console.log(`[EmailService] SMTP Pass:   ${smtpPass ? (smtpPass.length === 16 ? 'VALID 16-CHAR APP PASS' : `PRESENT (${smtpPass.length} chars)`) : 'NOT_CONFIGURED'}`);
-        console.log(`[EmailService] Resend API:  ${process.env.RESEND_API_KEY ? 'CONFIGURED' : 'NOT_CONFIGURED'}`);
+        console.log(`[EmailService] Initializing Production HTTP Email API Engine...`);
 
-        if (smtpUser && smtpPass && smtpPass !== 'YOUR_GOOGLE_APP_PASSWORD') {
-            // Primary Transporter: Gmail SSL (Port 465 with Connection Pooling)
-            this.primaryTransporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: smtpUser,
-                    pass: smtpPass
-                },
-                pool: true,
-                maxConnections: 3,
-                maxMessages: 100,
-                connectionTimeout: 5000,
-                greetingTimeout: 5000,
-                socketTimeout: 5000,
-                debug: false,
-                logger: false
-            });
-
-            // Fallback Transporter: Custom Host/Port 587 (STARTTLS)
-            this.fallbackTransporter = nodemailer.createTransport({
-                host: smtpHost,
-                port: parseInt(process.env.SMTP_PORT || '587', 10),
-                secure: process.env.SMTP_SECURE === 'true',
-                requireTLS: true,
-                auth: {
-                    user: smtpUser,
-                    pass: smtpPass
-                },
-                tls: {
-                    rejectUnauthorized: false
-                },
-                connectionTimeout: 5000,
-                greetingTimeout: 5000,
-                socketTimeout: 5000
-            });
-
-            // Async background verification (Non-blocking)
-            this.verifySMTP().catch(err => {
-                console.warn('[EmailService] Non-blocking background SMTP verification warning:', err.message);
-            });
+        if (resendKey) {
+            this.activeProvider = 'Resend HTTP API';
+            console.log(`[EmailService] Active Provider: Resend (Key Present)`);
+        } else if (sendgridKey) {
+            this.activeProvider = 'SendGrid HTTP API';
+            console.log(`[EmailService] Active Provider: SendGrid (Key Present)`);
         } else {
-            console.warn('[EmailService] ⚠️ Gmail SMTP credentials missing. Outbound emails will use Fallback logger.');
-        }
-    }
-
-    async verifySMTP() {
-        console.log('[EmailService] Running non-blocking SMTP Verification check...');
-        if (!this.primaryTransporter) {
-            return { active: false, status: 'SMTP credentials missing or invalid.' };
-        }
-        try {
-            await this.primaryTransporter.verify();
-            console.log('[EmailService] ✅ Primary Gmail SMTP Transporter Connected & Ready.');
-            return { active: true, status: 'Connected & Verified (Gmail SSL)' };
-        } catch (err) {
-            console.warn('[EmailService] ⚠️ Primary Gmail SMTP verify warning:', err.message);
-            if (this.fallbackTransporter) {
-                try {
-                    await this.fallbackTransporter.verify();
-                    console.log('[EmailService] ✅ Fallback SMTP Transporter Connected & Ready.');
-                    return { active: true, status: 'Connected & Verified (Fallback 587)' };
-                } catch (fallbackErr) {
-                    console.warn('[EmailService] ⚠️ Fallback SMTP verify warning:', fallbackErr.message);
-                }
-            }
-            return { active: false, status: `Verification Warning: ${err.message}`, error: err.message };
+            this.activeProvider = 'Console HTTP Logger (Fallback)';
+            console.log(`[EmailService] ⚠️ No HTTP API key configured (RESEND_API_KEY / SENDGRID_API_KEY).`);
+            console.log(`[EmailService] 💡 Outbound emails will use non-blocking HTTP Console Logger. Set RESEND_API_KEY in server/.env for production email delivery.`);
         }
     }
 
     async testTransport() {
-        const smtpResult = await this.verifySMTP();
         return {
-            smtp: smtpResult,
-            resendConfigured: !!process.env.RESEND_API_KEY
+            activeProvider: this.activeProvider,
+            resendConfigured: !!(process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY),
+            sendgridConfigured: !!process.env.SENDGRID_API_KEY
         };
     }
 
-    async _sendWithResend(payload) {
-        const apiKey = process.env.RESEND_API_KEY;
-        if (!apiKey) return null;
+    async _sendViaResend(payload) {
+        const apiKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
+        const defaultFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || 'Aether AI <onboarding@resend.dev>';
 
-        console.log('[EmailService] 🔄 Attempting email dispatch via Resend HTTP API...');
+        const body = JSON.stringify({
+            from: defaultFrom,
+            to: [payload.to],
+            subject: payload.subject,
+            html: payload.html,
+            text: payload.text
+        });
+
         return new Promise((resolve, reject) => {
-            const data = JSON.stringify({
-                from: process.env.SMTP_FROM || 'Aether AI <onboarding@resend.dev>',
-                to: [payload.to],
-                subject: payload.subject,
-                html: payload.html,
-                text: payload.text
-            });
-
             const req = https.request({
                 hostname: 'api.resend.com',
                 path: '/emails',
@@ -125,103 +59,144 @@ class EmailService {
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(data)
+                    'Content-Length': Buffer.byteLength(body)
                 },
-                timeout: 8000
+                timeout: 10000
             }, (res) => {
-                let responseBody = '';
-                res.on('data', chunk => responseBody += chunk);
+                let responseData = '';
+                res.on('data', chunk => responseData += chunk);
+                res.on('end', () => {
+                    let parsedData;
+                    try { parsedData = JSON.parse(responseData); } catch { parsedData = responseData; }
+
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        const messageId = parsedData?.id || `resend_${Date.now()}`;
+                        console.log(`[EmailService] ✅ DISPATCH SUCCESS | Provider: Resend API | Status: ${res.statusCode} | Recipient: ${payload.to} | MessageID: ${messageId}`);
+                        resolve({
+                            success: true,
+                            provider: 'Resend HTTP API',
+                            statusCode: res.statusCode,
+                            messageId,
+                            response: parsedData
+                        });
+                    } else {
+                        const errMsg = parsedData?.message || parsedData?.error || responseData;
+                        console.error(`[EmailService] ❌ DISPATCH FAILED | Provider: Resend API | Status: ${res.statusCode} | Error: ${errMsg}`);
+                        reject(new Error(`Resend API Error (HTTP ${res.statusCode}): ${errMsg}`));
+                    }
+                });
+            });
+
+            req.on('error', (err) => {
+                console.error(`[EmailService] ❌ Network Error during Resend API call: ${err.message}`);
+                reject(err);
+            });
+
+            req.on('timeout', () => {
+                req.destroy();
+                console.error(`[EmailService] ❌ Resend API Request Timeout (10s)`);
+                reject(new Error('Resend API HTTP Request Timeout'));
+            });
+
+            req.write(body);
+            req.end();
+        });
+    }
+
+    async _sendViaSendGrid(payload) {
+        const apiKey = process.env.SENDGRID_API_KEY;
+        const defaultFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || 'Aether AI <noreply@aetherai.com>';
+
+        const body = JSON.stringify({
+            personalizations: [{ to: [{ email: payload.to }] }],
+            from: { email: defaultFrom.includes('<') ? defaultFrom.split('<')[1].replace('>', '') : defaultFrom },
+            subject: payload.subject,
+            content: [
+                { type: 'text/html', value: payload.html },
+                { type: 'text/plain', value: payload.text }
+            ]
+        });
+
+        return new Promise((resolve, reject) => {
+            const req = https.request({
+                hostname: 'api.sendgrid.com',
+                path: '/v3/mail/send',
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body)
+                },
+                timeout: 10000
+            }, (res) => {
+                let responseData = '';
+                res.on('data', chunk => responseData += chunk);
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
-                        try {
-                            const parsed = JSON.parse(responseBody);
-                            console.log('[EmailService] ✅ Resend Email Dispatch Succeeded! ID:', parsed.id);
-                            resolve({ success: true, provider: 'Resend API', messageId: parsed.id });
-                        } catch {
-                            resolve({ success: true, provider: 'Resend API' });
-                        }
+                        const messageId = res.headers['x-message-id'] || `sendgrid_${Date.now()}`;
+                        console.log(`[EmailService] ✅ DISPATCH SUCCESS | Provider: SendGrid API | Status: ${res.statusCode} | Recipient: ${payload.to} | MessageID: ${messageId}`);
+                        resolve({
+                            success: true,
+                            provider: 'SendGrid HTTP API',
+                            statusCode: res.statusCode,
+                            messageId
+                        });
                     } else {
-                        reject(new Error(`Resend API HTTP ${res.statusCode}: ${responseBody}`));
+                        console.error(`[EmailService] ❌ DISPATCH FAILED | Provider: SendGrid API | Status: ${res.statusCode} | Response: ${responseData}`);
+                        reject(new Error(`SendGrid API Error (HTTP ${res.statusCode}): ${responseData}`));
                     }
                 });
             });
 
             req.on('error', (err) => reject(err));
-            req.on('timeout', () => {
-                req.destroy();
-                reject(new Error('Resend API Request Timeout'));
-            });
+            req.on('timeout', () => { req.destroy(); reject(new Error('SendGrid HTTP Request Timeout')); });
 
-            req.write(data);
+            req.write(body);
             req.end();
         });
     }
 
     async _send(payload) {
         const { to, subject, html, text } = payload;
-        const defaultFrom = process.env.SMTP_USER ? `Aether AI <${process.env.SMTP_USER}>` : 'Aether AI <noreply@gmail.com>';
-        const from = process.env.SMTP_FROM || defaultFrom;
-
         console.log(`[EmailService] ====================================================`);
-        console.log(`[EmailService] DISPATCHING EMAIL to: ${to}`);
-        console.log(`[EmailService] Subject: "${subject}"`);
+        console.log(`[EmailService] OUTBOUND HTTP EMAIL DISPATCH`);
+        console.log(`[EmailService] Recipient: ${to}`);
+        console.log(`[EmailService] Subject:   "${subject}"`);
+        console.log(`[EmailService] Provider:  ${this.activeProvider}`);
         console.log(`[EmailService] ====================================================`);
 
-        // 1. Try Primary Gmail Transporter (Port 465 SSL Connection Pool)
-        if (this.primaryTransporter) {
+        const resendKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
+        const sendgridKey = process.env.SENDGRID_API_KEY;
+
+        if (resendKey) {
             try {
-                const info = await this.primaryTransporter.sendMail({
-                    from,
-                    to,
-                    subject,
-                    html,
-                    text: text || html.replace(/<[^>]*>?/gm, '')
-                });
-                console.log(`[EmailService] ✅ EMAIL DELIVERED via Primary Gmail SMTP! MessageID: ${info.messageId}`);
-                return { success: true, provider: 'Gmail SMTP (Primary SSL)', messageId: info.messageId };
-            } catch (primaryErr) {
-                console.warn(`[EmailService] ⚠️ Primary Gmail SMTP failed (${primaryErr.code || primaryErr.message}). Retrying fallback...`);
+                return await this._sendViaResend(payload);
+            } catch (err) {
+                console.error(`[EmailService] Resend API failed: ${err.message}`);
+                throw err;
             }
         }
 
-        // 2. Try Fallback Transporter (Port 587 TLS)
-        if (this.fallbackTransporter) {
+        if (sendgridKey) {
             try {
-                const info = await this.fallbackTransporter.sendMail({
-                    from,
-                    to,
-                    subject,
-                    html,
-                    text: text || html.replace(/<[^>]*>?/gm, '')
-                });
-                console.log(`[EmailService] ✅ EMAIL DELIVERED via Fallback SMTP (587)! MessageID: ${info.messageId}`);
-                return { success: true, provider: 'Gmail SMTP (Fallback 587)', messageId: info.messageId };
-            } catch (fallbackErr) {
-                console.warn(`[EmailService] ⚠️ Fallback SMTP (587) failed (${fallbackErr.code || fallbackErr.message}).`);
+                return await this._sendViaSendGrid(payload);
+            } catch (err) {
+                console.error(`[EmailService] SendGrid API failed: ${err.message}`);
+                throw err;
             }
         }
 
-        // 3. Try Resend HTTP API (if RESEND_API_KEY is set)
-        if (process.env.RESEND_API_KEY) {
-            try {
-                const resendResult = await this._sendWithResend(payload);
-                if (resendResult) return resendResult;
-            } catch (resendErr) {
-                console.warn(`[EmailService] ⚠️ Resend API dispatch failed: ${resendErr.message}`);
-            }
-        }
-
-        // 4. Fallback Dispatch Logger: Ensures authentication flow never blocks even if cloud host blocks outbound SMTP
-        console.warn(`[EmailService] ⚠️ OUTBOUND SMTP PORTS ARE BLOCKED BY CLOUD HOST FIREWALL.`);
-        console.warn(`[EmailService] 📢 EMERGENCY CONSOLE DISPATCH LOGGED FOR ${to}:`);
-        console.warn(`[EmailService] SUBJECT: ${subject}`);
-        console.warn(`[EmailService] BODY TEXT:\n${text}`);
-        console.warn(`[EmailService] ====================================================`);
+        // Fallback HTTP Console Logger (When no external API key is set)
+        console.log(`[EmailService] 📢 DISPATCH LOGGED TO CONSOLE (Fallback Engine):`);
+        console.log(`[EmailService] TO: ${to}`);
+        console.log(`[EmailService] SUBJECT: ${subject}`);
+        console.log(`[EmailService] CONTENT SUMMARY:\n${text}`);
+        console.log(`[EmailService] ====================================================`);
 
         return {
             success: true,
-            provider: 'Console Logger (Cloud SMTP Network Timeout)',
-            warning: 'Outbound SMTP port blocked by host firewall.'
+            provider: 'Console Logger (No API Key Configured)',
+            messageId: `console_${Date.now()}`
         };
     }
 

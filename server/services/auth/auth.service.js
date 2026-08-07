@@ -71,7 +71,9 @@ class AuthService {
                 await existingUser.save();
                 console.log(`[Registration] OTP stored in DB for ${email}. Expiry: 10m.`);
 
-                await emailService.sendRegistrationOTPEmail({ name, email }, otp);
+                // Send registration OTP email asynchronously in background (non-blocking HTTP response)
+                emailService.sendRegistrationOTPEmail({ name, email }, otp)
+                    .catch(err => console.error('[Registration] Async email dispatch warning:', err.message));
                 console.log(`[Registration] Resent verification OTP to ${email}`);
 
                 return {
@@ -99,8 +101,9 @@ class AuthService {
 
         console.log(`[Registration] User created: ${email}. OTP stored in DB. Expiry: 10m.`);
 
-        // Send registration OTP email
-        await emailService.sendRegistrationOTPEmail({ name, email }, otp);
+        // Send registration OTP email asynchronously in background (non-blocking HTTP response)
+        emailService.sendRegistrationOTPEmail({ name, email }, otp)
+            .catch(err => console.error('[Registration] Async email dispatch warning:', err.message));
 
         return {
             requiresOTP: true,
@@ -207,7 +210,9 @@ class AuthService {
             user.registrationOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
 
-            await emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp);
+            // Send registration OTP email asynchronously in background
+            emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp)
+                .catch(err => console.error('[Login] Async email dispatch warning:', err.message));
 
             return {
                 requiresOTP: true,
@@ -228,8 +233,9 @@ class AuthService {
         user.otpResendWindowStart = new Date();
         await user.save();
 
-        // Send OTP email
-        await emailService.sendOTPEmail({ name: user.name, email: user.email }, otp);
+        // Send OTP email asynchronously in background (non-blocking HTTP response)
+        emailService.sendOTPEmail({ name: user.name, email: user.email }, otp)
+            .catch(err => console.error('[Login] Async 2FA email dispatch warning:', err.message));
 
         return {
             requiresOTP: true,
@@ -315,13 +321,15 @@ class AuthService {
             user.registrationOTP = hashedOTP;
             user.registrationOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
-            await emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp);
+            emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp)
+                .catch(err => console.error('[Resend OTP] Async dispatch warning:', err.message));
             console.log(`[Resend OTP] Resent Registration OTP [${otp}] to ${email}`);
         } else {
             user.loginOTP = hashedOTP;
             user.loginOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
-            await emailService.sendOTPEmail({ name: user.name, email: user.email }, otp);
+            emailService.sendOTPEmail({ name: user.name, email: user.email }, otp)
+                .catch(err => console.error('[Resend OTP] Async dispatch warning:', err.message));
             console.log(`[Resend OTP] Resent 2FA Login OTP [${otp}] to ${email}`);
         }
 
@@ -341,7 +349,8 @@ class AuthService {
         user.resetPasswordExpires = new Date(Date.now() + RESET_EXPIRY_MS);
         await user.save();
 
-        await emailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
+        emailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken)
+            .catch(err => console.error('[ForgotPassword] Async dispatch warning:', err.message));
 
         return { message: 'If an account with that email exists, a reset link has been sent.' };
     }

@@ -7,6 +7,9 @@ const env = require("./env");
 
 const app = express();
 
+// Trust reverse proxy (Render / Vercel / Cloudflare) to resolve express-rate-limit X-Forwarded-For warning
+app.set("trust proxy", 1);
+
 // Dynamic CORS Origin configuration supporting Vercel and localhost fallbacks
 const corsOptions = {
     origin(origin, callback) {

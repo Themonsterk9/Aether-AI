@@ -38,9 +38,9 @@ class EmailService {
                 pool: true,
                 maxConnections: 3,
                 maxMessages: 100,
-                connectionTimeout: 10000,
-                greetingTimeout: 10000,
-                socketTimeout: 10000,
+                connectionTimeout: 5000,
+                greetingTimeout: 5000,
+                socketTimeout: 5000,
                 debug: false,
                 logger: false
             });
@@ -58,9 +58,9 @@ class EmailService {
                 tls: {
                     rejectUnauthorized: false
                 },
-                connectionTimeout: 10000,
-                greetingTimeout: 10000,
-                socketTimeout: 10000
+                connectionTimeout: 5000,
+                greetingTimeout: 5000,
+                socketTimeout: 5000
             });
 
             // Async background verification (Non-blocking)

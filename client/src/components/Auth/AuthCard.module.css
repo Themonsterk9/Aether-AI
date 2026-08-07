@@ -6,7 +6,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 16px;
     box-sizing: border-box;
     background: var(--bg);
     position: relative;
@@ -17,9 +17,9 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     text-decoration: none;
     transition: color 0.18s, transform 0.18s;
@@ -34,16 +34,40 @@
 .card {
     width: 100%;
     max-width: 440px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
     background: rgba(30, 41, 59, 0.45);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl, 20px);
-    padding: 48px 40px;
+    padding: 32px 32px;
     box-sizing: border-box;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: var(--shadow-lg, 0 20px 50px rgba(0, 0, 0, 0.4));
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+
+    /* Custom subtle scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124, 58, 237, 0.3) transparent;
+}
+
+.card::-webkit-scrollbar {
+    width: 4px;
+}
+
+.card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.card::-webkit-scrollbar-thumb {
+    background: rgba(124, 58, 237, 0.3);
+    border-radius: 4px;
+}
+
+.card::-webkit-scrollbar-thumb:hover {
+    background: rgba(124, 58, 237, 0.6);
 }
 
 /* Logo */
@@ -52,24 +76,24 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .logoIcon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     background: var(--gradient);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .brandTitle {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--text-primary);
     margin: 0;
@@ -77,19 +101,19 @@
 }
 
 .brandSub {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-secondary);
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 /* Header */
 .header {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 18px;
 }
 
 .title {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     color: var(--text-primary);
     margin: 0;
@@ -97,22 +121,22 @@
 }
 
 .subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
-    margin: 8px 0 0;
+    margin: 4px 0 0;
 }
 
 /* Error Banner */
 .errorBanner {
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 10px;
     background: rgba(239, 68, 68, 0.12);
     border: 1px solid rgba(239, 68, 68, 0.25);
     color: #fca5a5;
     font-size: 13px;
     font-weight: 500;
-    line-height: 1.5;
-    margin-bottom: 24px;
+    line-height: 1.4;
+    margin-bottom: 16px;
     text-align: left;
 }
 
@@ -125,12 +149,12 @@
 .field {
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    margin-bottom: 18px;
+    gap: 5px;
+    margin-bottom: 14px;
 }
 
 .label {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
@@ -157,8 +181,8 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text-primary);
-    font-size: 15px;
-    padding: 12px 14px 12px 40px;
+    font-size: 14px;
+    padding: 10px 14px 10px 40px;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -176,13 +200,13 @@
 /* ── Submit Button ── */
 .submitBtn {
     width: 100%;
-    margin-top: 8px;
-    padding: 13px;
+    margin-top: 6px;
+    padding: 11px;
     border: none;
     border-radius: 10px;
     background: var(--gradient);
     color: #fff;
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 700;
     letter-spacing: 0.02em;
     cursor: pointer;
@@ -190,12 +214,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
+    min-height: 44px;
     box-sizing: border-box;
 }
 
 .submitBtn:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45);
 }
 
@@ -206,10 +230,10 @@
 
 /* ── Spinner ── */
 .spinner {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     animation: spin 0.7s linear infinite;
     display: inline-block;
@@ -221,9 +245,9 @@
 
 /* Footer Link styling */
 .footerText {
-    margin: 32px 0 0;
+    margin: 20px 0 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 13.5px;
     color: var(--text-secondary);
 }
 
@@ -241,11 +265,12 @@
 /* Responsive adjustments */
 @media (max-width: 480px) {
     .container {
-        padding: 16px;
+        padding: 12px;
     }
 
     .card {
-        padding: 40px 24px;
+        padding: 24px 20px;
+        max-height: none;
         background: rgba(30, 41, 59, 0.25);
         border: 1px solid var(--border);
         box-shadow: none;

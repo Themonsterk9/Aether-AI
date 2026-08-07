@@ -1,0 +1,118 @@
+.emailBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    border-radius: 999px;
+    color: #A78BFA;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    align-self: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.otpGrid {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.otpBox {
+    width: 48px;
+    height: 56px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    font-family: monospace;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+    caret-color: transparent;
+    outline: none;
+}
+
+.otpBox:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.otpBox.filled {
+    border-color: rgba(124, 58, 237, 0.5);
+    background: rgba(124, 58, 237, 0.06);
+    transform: scale(1.04);
+}
+
+.resendRow {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.countdown {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.countdownNum {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.resendBtn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.resendBtn:hover:not(:disabled) {
+    color: var(--accent);
+    background: rgba(124, 58, 237, 0.08);
+}
+
+.resendBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.backLink {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 12px 0 0;
+}
+
+.backAnchor {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.backAnchor:hover {
+    color: var(--accent);
+}
+
+@media (max-width: 400px) {
+    .otpBox {
+        width: 40px;
+        height: 48px;
+        font-size: 18px;
+    }
+    .otpGrid {
+        gap: 7px;
+    }
+}

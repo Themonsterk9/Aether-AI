@@ -12,7 +12,10 @@
     backdrop-filter: var(--glass-blur);
     cursor: pointer;
     width: 100%;
-    min-height: 76px;
+    min-width: 0;
+    min-height: 72px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .card:hover {

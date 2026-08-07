@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import AetherLogo from "../../components/Common/AetherLogo";
 import { LuBrain } from "react-icons/lu";
 import { TbDatabase } from "react-icons/tb";
-import { HiSparkles } from "react-icons/hi2";
+import { HiSparkles } from "react-icons/hi2"; // kept for features section
 import { FiArrowRight } from "react-icons/fi";
 
 import styles from "./Home.module.css";
@@ -97,12 +97,12 @@ export default function Home() {
                     animate="visible"
                 >
                     <motion.div className={styles.heroBadge} variants={itemVariants}>
-                        <HiSparkles size={14} /> Powered by Google Gemini · Cloud Architecture
+                        <HiSparkles size={14} /> Built with Google Gemini · Cloud Architecture
                     </motion.div>
 
                     <motion.h1 className={styles.heroHeading} variants={itemVariants}>
-                        Your AI Assistant,{" "}
-                        <span className={styles.gradient}>Powered by Gemini</span>
+                        Your AI Assistant<br />
+                        <span className={styles.gradient}>Built with Google Gemini</span>
                     </motion.h1>
 
                     <motion.p className={styles.heroSub} variants={itemVariants}>
@@ -148,7 +148,7 @@ export default function Home() {
 
             {/* ── Footer ───────────────────────────────── */}
             <footer className={styles.footer}>
-                <span>Powered by Gemini</span>
+                <span>Built with Google Gemini</span>
                 <span className={styles.footerDot}>·</span>
                 <span>Open Source</span>
                 <span className={styles.footerDot}>·</span>

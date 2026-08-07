@@ -110,10 +110,11 @@ export default function Chat() {
                 </AnimatePresence>
 
                 <div className={styles.mainPane}>
+                    {/* onKnowledge intentionally omitted — hides Knowledge panel button from default UI.
+                        All KnowledgePanel state, code, and drawer logic below remain fully intact. */}
                     <ChatHeader
                         onSettings={() => setIsSettingsOpen(true)}
                         onMenu={() => setIsSidebarOpen(true)}
-                        onKnowledge={() => setIsKnowledgeOpen((prev) => !prev)}
                     />
 
                     <AnimatePresence mode="wait">

@@ -1,10 +1,11 @@
 .container {
     width: 100%;
-    max-width: 860px;
-    margin-top: 16px;
+    max-width: 960px;
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
+    box-sizing: border-box;
 }
 
 .header {

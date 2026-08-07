@@ -210,7 +210,7 @@ export default function WelcomeDashboard({ onOpenSidebar }) {
         }
     };
 
-    const logoSize = windowWidth < 600 ? 64 : windowWidth < 992 ? 80 : 96;
+    const logoSize = windowWidth < 600 ? 44 : windowWidth < 992 ? 54 : 64;
 
     return (
         <motion.div

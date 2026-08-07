@@ -1,12 +1,13 @@
 .container {
     width: 100%;
-    max-width: 860px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 12px 20px 20px;
+    padding: 8px 20px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    box-sizing: border-box;
 }
 
 .toolbar {
@@ -53,6 +54,7 @@
     backdrop-filter: var(--glass-blur);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), var(--purple-glow);
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    box-sizing: border-box;
 }
 
 .inputWrapper:focus-within {
@@ -132,4 +134,35 @@
     opacity: 0.4;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 6px 12px 12px;
+    }
+
+    .inputWrapper {
+        padding: 8px 12px 8px 16px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .container {
+        padding: 4px 8px 10px;
+    }
+
+    .inputWrapper {
+        padding: 6px 8px 6px 12px;
+        gap: 6px;
+    }
+
+    .micButton, .sendButton {
+        width: 34px;
+        height: 34px;
+    }
+
+    .textarea {
+        font-size: 14px;
+    }
 }

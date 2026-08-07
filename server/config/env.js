@@ -18,5 +18,14 @@ module.exports = {
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 
-    NODE_ENV: process.env.NODE_ENV || "development"
+    NODE_ENV: process.env.NODE_ENV || "development",
+    CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+    SERVER_URL: process.env.SERVER_URL || 'http://localhost:5002',
+
+    SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+    SMTP_SECURE: process.env.SMTP_SECURE === 'true',
+    SMTP_USER: process.env.SMTP_USER || '',
+    SMTP_PASS: process.env.SMTP_PASS || '',
+    SMTP_FROM: process.env.SMTP_FROM || (process.env.SMTP_USER ? `Aether AI <${process.env.SMTP_USER}>` : 'Aether AI <noreply@gmail.com>'),
 };

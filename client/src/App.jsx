@@ -13,6 +13,9 @@ const Register = lazy(() => import("./pages/Register/Register"));
 const Profile = lazy(() => import("./pages/Profile/Profile"));
 const Settings = lazy(() => import("./pages/Settings/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
+const OTP = lazy(() => import('./pages/OTP/OTP'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword/ResetPassword'));
 
 // Loading Screen
 function PageLoader() {
@@ -83,6 +86,10 @@ export default function App() {
                             path="/register"
                             element={<Register />}
                         />
+
+                        <Route path="/otp" element={<OTP />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
 
                         {/* Protected Pages */}
 

@@ -1,1 +1,132 @@
-/* Replaced by d:\Aether AI\client\src\components\Auth\AuthCard.module.css */
+/* Toggle Show/Hide Password Button inside input wrap */
+.toggleBtn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 6px;
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.toggleBtn:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Confirm Password Status Label */
+.labelWithStatus {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.matchBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.matchSuccess {
+    color: #34D399;
+}
+
+.matchError {
+    color: #F87171;
+}
+
+.inputSuccess {
+    border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+.inputError {
+    border-color: rgba(248, 113, 113, 0.5) !important;
+}
+
+/* Flat Horizontal Password Requirements Status Bar */
+.requirementsContainer {
+    margin: 6px 0 14px;
+    padding: 8px 12px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.requirementsTitle {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1;
+}
+
+/* Horizontal Auto-Wrapping List */
+.requirementsList {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px 12px;
+    width: 100%;
+}
+
+.checkItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #64748B;
+    line-height: 1.2;
+    transition: color 0.18s ease;
+    flex-shrink: 0;
+}
+
+.iconDefault {
+    color: #475569;
+    flex-shrink: 0;
+}
+
+.iconPassed {
+    color: #10B981;
+    flex-shrink: 0;
+}
+
+.checkItemPassed {
+    color: #E2E8F0;
+    font-weight: 500;
+}
+
+.checkItemPassed span {
+    color: #6EE7B7;
+}
+
+/* Mobile (<480px): Natural flex wrap / stack */
+@media (max-width: 480px) {
+    .requirementsContainer {
+        padding: 8px 10px;
+    }
+    .requirementsList {
+        gap: 4px 10px;
+    }
+    .checkItem {
+        font-size: 10.5px;
+    }
+}

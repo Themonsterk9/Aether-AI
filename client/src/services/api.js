@@ -55,19 +55,25 @@ api.interceptors.response.use(
 
         // 2. Session Expired / Unauthorized (401)
         if (status === 401) {
-            console.warn("Session Expired:", msg);
-            toast.warn(`Session Expired: ${msg}`);
+            const isAuthEndpoint = error.config?.url?.includes('/auth/login') || 
+                                   error.config?.url?.includes('/auth/register') ||
+                                   error.config?.url?.includes('/auth/verify-otp');
             
-            // Clear storage and redirect
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            
-            if (
-                !window.location.pathname.includes("/login") && 
-                !window.location.pathname.includes("/register") && 
-                window.location.pathname !== "/"
-            ) {
-                window.location.href = "/login";
+            if (!isAuthEndpoint) {
+                console.warn("Session Expired:", msg);
+                toast.warn(`Session Expired: ${msg}`);
+                
+                // Clear storage and redirect
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                
+                if (
+                    !window.location.pathname.includes("/login") && 
+                    !window.location.pathname.includes("/register") && 
+                    window.location.pathname !== "/"
+                ) {
+                    window.location.href = "/login";
+                }
             }
         }
         

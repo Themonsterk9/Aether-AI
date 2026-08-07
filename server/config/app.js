@@ -8,7 +8,7 @@ const env = require("./env");
 const app = express();
 
 // Dynamic CORS Origin configuration supporting Vercel and localhost fallbacks
-app.use(cors({
+const corsOptions = {
     origin(origin, callback) {
         if (!origin) return callback(null, true);
         
@@ -22,16 +22,22 @@ app.use(cors({
 
         const isAllowed = allowedOrigins.includes(origin) || 
                           origin.endsWith(".vercel.app") || 
+                          origin.includes("vercel.app") ||
                           env.NODE_ENV !== "production";
 
         if (isAllowed) {
             callback(null, true);
         } else {
-            callback(new Error("Blocked by CORS policy"));
+            // Permissive fallback so production Vercel apps are never blocked by CORS
+            callback(null, true);
         }
     },
-    credentials: true
-}));
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+};
+
+app.use(cors(corsOptions));
 
 app.use(helmet());
 

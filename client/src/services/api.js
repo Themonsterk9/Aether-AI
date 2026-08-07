@@ -1,9 +1,39 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
+// Diagnostic log for production verification
+console.log("[Aether AI Client] VITE_API_URL:", import.meta.env.VITE_API_URL);
+
+/**
+ * Resolves and normalizes the backend API base URL.
+ * Handles cases where VITE_API_URL is:
+ * - undefined -> "/api/v1"
+ * - "https://domain.com" -> "https://domain.com/api/v1"
+ * - "https://domain.com/" -> "https://domain.com/api/v1"
+ * - "https://domain.com/api" -> "https://domain.com/api/v1"
+ * - "https://domain.com/api/v1" -> "https://domain.com/api/v1"
+ */
+const resolveBaseURL = () => {
+    const rawUrl = import.meta.env.VITE_API_URL;
+    if (!rawUrl) return "/api/v1";
+
+    let url = rawUrl.trim().replace(/\/+$/, "");
+
+    if (url.endsWith("/api/v1")) return url;
+    if (url.endsWith("/api")) return `${url}/v1`;
+    
+    // If raw host string (e.g. https://aether-ai.onrender.com)
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+        return `${url}/api/v1`;
+    }
+
+    return url;
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "/api/v1",
+    baseURL: resolveBaseURL(),
     timeout: 30000, // 30 seconds network timeout
+    withCredentials: true,
     headers: {
         "Content-Type": "application/json"
     }

@@ -65,20 +65,21 @@ class ChatService {
 
     async streamMessage(chatId, message, token, onToken) {
 
-    const response = await fetch(
-        `${api.defaults.baseURL}/chat/${chatId}/stream`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                "Accept": "text/event-stream"
-            },
-            body: JSON.stringify({
-                message
-            })
-        }
-    );
+        const baseUrl = api.defaults.baseURL.replace(/\/+$/, "");
+        const response = await fetch(
+            `${baseUrl}/chat/${chatId}/stream`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "text/event-stream"
+                },
+                body: JSON.stringify({
+                    message
+                })
+            }
+        );
 
     if (!response.ok) {
         throw new Error("Streaming request failed");

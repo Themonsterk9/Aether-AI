@@ -503,8 +503,12 @@ class AuthService {
         user.resetPasswordExpires = new Date(Date.now() + RESET_EXPIRY_MS);
         await user.save();
 
-        emailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken)
-            .catch(err => console.error('[ForgotPassword] Async dispatch warning:', err.message));
+        try {
+            await emailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
+            console.log(`[ForgotPassword] Password reset email successfully delivered via Brevo for ${email}`);
+        } catch (emailErr) {
+            console.error('[ForgotPassword] Password reset email dispatch failed:', emailErr.message);
+        }
 
         return { message: 'If an account with that email exists, a reset link has been sent.' };
     }

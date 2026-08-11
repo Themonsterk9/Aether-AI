@@ -29,6 +29,12 @@ router.post('/login',
     authController.login
 );
 
+// POST /google
+router.post('/google',
+    loginLimiter,
+    authController.googleAuth
+);
+
 // POST /verify-otp
 router.post('/verify-otp',
     otpLimiter,

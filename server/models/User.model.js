@@ -64,6 +64,9 @@ const userSchema = new mongoose.Schema(
         lastLoginIP: { type: String, default: null },
         lastLoginDevice: { type: String, default: null },
 
+        // Google OAuth Integration
+        googleId: { type: String, default: null, sparse: true },
+
         // Security
         failedLoginAttempts: { type: Number, default: 0 },
         accountLockedUntil: { type: Date, default: null }
@@ -72,5 +75,11 @@ const userSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+
+// Performance Indexes for Fast Lookups & TTL Expiration
+userSchema.index({ email: 1 });
+userSchema.index({ googleId: 1 }, { sparse: true });
+userSchema.index({ registrationOTPExpires: 1 });
+userSchema.index({ loginOTPExpires: 1 });
 
 module.exports = mongoose.model("User", userSchema);

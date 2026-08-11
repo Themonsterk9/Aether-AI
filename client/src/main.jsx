@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import App from "./App";
 import "./styles/globals.css";
 
@@ -11,6 +13,8 @@ import { AppProvider } from "./context/AppContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import ErrorBoundary from "./components/Common/ErrorBoundary";
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1000000000000-dummygoogleclientid.apps.googleusercontent.com";
 
 // Global Unhandled Promise Rejection Handler
 window.addEventListener("unhandledrejection", (event) => {
@@ -35,21 +39,23 @@ window.addEventListener("unhandledrejection", (event) => {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <BrowserRouter>
-            <AppProvider>
-                <AuthProvider>
-                    <ChatProvider>
-                        <ErrorBoundary>
-                            <App />
-                        </ErrorBoundary>
-                        <ToastContainer
-                            position="bottom-right"
-                            theme="dark"
-                            autoClose={3500}
-                        />
-                    </ChatProvider>
-                </AuthProvider>
-            </AppProvider>
-        </BrowserRouter>
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <BrowserRouter>
+                <AppProvider>
+                    <AuthProvider>
+                        <ChatProvider>
+                            <ErrorBoundary>
+                                <App />
+                            </ErrorBoundary>
+                            <ToastContainer
+                                position="bottom-right"
+                                theme="dark"
+                                autoClose={3500}
+                            />
+                        </ChatProvider>
+                    </AuthProvider>
+                </AppProvider>
+            </BrowserRouter>
+        </GoogleOAuthProvider>
     </React.StrictMode>
 );

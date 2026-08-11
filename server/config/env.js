@@ -26,6 +26,9 @@ module.exports = {
     BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'kgsdhakar8107@gmail.com',
     BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Aether AI',
 
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+
     SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
     SMTP_SECURE: process.env.SMTP_SECURE === 'true',

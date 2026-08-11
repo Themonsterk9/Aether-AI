@@ -22,6 +22,17 @@ class AuthController {
         }
     }
 
+    async googleAuth(req, res) {
+        try {
+            const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown';
+            const ua = req.headers['user-agent'] || '';
+            const result = await authService.googleAuth(req.body, ip, ua);
+            return res.status(200).json({ success: true, message: result.message, data: result });
+        } catch (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+    }
+
     async verifyOTP(req, res) {
         try {
             const { email, otp } = req.body;

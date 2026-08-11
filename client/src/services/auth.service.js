@@ -12,6 +12,11 @@ class AuthService {
         return response.data;
     }
 
+    async googleAuth(googleData) {
+        const response = await api.post('/auth/google', googleData);
+        return response.data;
+    }
+
     async verifyOTP(email, otp) {
         const response = await api.post('/auth/verify-otp', { email, otp });
         return response.data;

@@ -330,12 +330,21 @@ class AuthService {
         if (!user) return { message: 'If an account exists, a code was sent.' };
 
         const now = Date.now();
+        if (user.otpResendWindowStart) {
+            const elapsed = now - user.otpResendWindowStart.getTime();
+            if (elapsed < OTP_RESEND_COOLDOWN_MS) {
+                const secondsLeft = Math.ceil((OTP_RESEND_COOLDOWN_MS - elapsed) / 1000);
+                throw new Error(`Please wait ${secondsLeft}s before requesting a new verification code.`);
+            }
+        }
+
         const otp = generateOTP();
         const hashedOTP = await bcrypt.hash(otp, 10);
+        user.otpResendWindowStart = new Date(now);
 
         if (!user.emailVerified) {
             user.registrationOTP = hashedOTP;
-            user.registrationOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
+            user.registrationOTPExpires = new Date(now + OTP_EXPIRY_MS);
             await user.save();
 
             try {
@@ -347,7 +356,7 @@ class AuthService {
             console.log(`[Resend OTP] Resent Registration OTP email to ${email}`);
         } else {
             user.loginOTP = hashedOTP;
-            user.loginOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
+            user.loginOTPExpires = new Date(now + OTP_EXPIRY_MS);
             await user.save();
 
             try {
@@ -360,6 +369,125 @@ class AuthService {
         }
 
         return { message: 'A new verification code has been sent to your email.' };
+    }
+
+    async googleAuth(googleData, ipAddress, userAgent) {
+        const { credential, accessToken } = googleData;
+        let googlePayload = null;
+
+        if (credential) {
+            // Verify Google ID token via OAuth2Client or google tokeninfo endpoint
+            const googleClientId = process.env.GOOGLE_CLIENT_ID;
+            if (googleClientId) {
+                try {
+                    const { OAuth2Client } = require('google-auth-library');
+                    const client = new OAuth2Client(googleClientId);
+                    const ticket = await client.verifyIdToken({
+                        idToken: credential,
+                        audience: googleClientId
+                    });
+                    googlePayload = ticket.getPayload();
+                } catch (err) {
+                    console.warn('[GoogleAuth] OAuth2Client verification failed, falling back to HTTPS tokeninfo:', err.message);
+                }
+            }
+
+            // Fallback via HTTPS tokeninfo query
+            if (!googlePayload) {
+                googlePayload = await new Promise((resolve, reject) => {
+                    const https = require('https');
+                    https.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`, (res) => {
+                        let data = '';
+                        res.on('data', c => data += c);
+                        res.on('end', () => {
+                            try {
+                                const parsed = JSON.parse(data);
+                                if (parsed.email) resolve(parsed);
+                                else reject(new Error(parsed.error_description || 'Invalid Google ID token'));
+                            } catch (e) {
+                                reject(e);
+                            }
+                        });
+                    }).on('error', reject);
+                });
+            }
+        } else if (accessToken) {
+            // Verify Google Access Token via userinfo endpoint
+            googlePayload = await new Promise((resolve, reject) => {
+                const https = require('https');
+                https.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${encodeURIComponent(accessToken)}`, (res) => {
+                    let data = '';
+                    res.on('data', c => data += c);
+                    res.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (parsed.email) resolve(parsed);
+                            else reject(new Error('Invalid Google access token'));
+                        } catch (e) {
+                            reject(e);
+                        }
+                    });
+                }).on('error', reject);
+            });
+        }
+
+        if (!googlePayload || !googlePayload.email) {
+            throw new Error('Google authentication failed. Valid email required from Google.');
+        }
+
+        const email = googlePayload.email.toLowerCase().trim();
+        const name = googlePayload.name || googlePayload.given_name || 'Google User';
+        const googleId = googlePayload.sub;
+        const picture = googlePayload.picture || '';
+
+        console.log(`[GoogleAuth] Authenticating Google user: ${email}`);
+
+        let user = await User.findOne({ email });
+
+        if (user) {
+            // Account Linking & Auto-verification for Google users
+            user.googleId = googleId || user.googleId;
+            user.emailVerified = true;
+            if (!user.avatar && picture) user.avatar = picture;
+        } else {
+            // Register new user with verified Google identity
+            const randomPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 12);
+            user = new User({
+                name,
+                email,
+                password: randomPassword,
+                googleId,
+                emailVerified: true,
+                avatar: picture
+            });
+        }
+
+        // Session tracking
+        const { browser, device } = parseUserAgent(userAgent);
+        user.lastLogin = new Date();
+        user.lastLoginIP = ipAddress;
+        user.lastLoginDevice = `${device} · ${browser}`;
+        await user.save();
+
+        // Issue JWT token (No OTP required for Google Auth!)
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        return {
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatar: user.avatar,
+                documentMode: user.documentMode
+            },
+            message: 'Google authentication successful!'
+        };
     }
 
     async forgotPassword(email) {

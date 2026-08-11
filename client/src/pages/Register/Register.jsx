@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 
 import authService from '../../services/auth.service';
+import GoogleAuthButton from '../../components/Auth/GoogleAuthButton';
 import AuthCard from '../../components/Auth/AuthCard';
 import styles from '../../components/Auth/AuthCard.module.css';
 import regStyles from './Register.module.css';
@@ -83,6 +84,8 @@ export default function Register() {
             footerActionText="Sign in"
             footerLinkTo="/login"
         >
+            <GoogleAuthButton label="Sign up with Google" onError={(msg) => setError(msg)} />
+
             <form onSubmit={handleSubmit} noValidate>
                 {/* 1. Full Name */}
                 <div className={styles.field}>

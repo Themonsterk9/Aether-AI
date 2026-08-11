@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 
-import authService from '../../services/auth.service';
+import GoogleAuthButton from '../../components/Auth/GoogleAuthButton';
 import AuthCard from '../../components/Auth/AuthCard';
 import styles from '../../components/Auth/AuthCard.module.css';
 import loginStyles from './Login.module.css';
@@ -56,6 +56,8 @@ export default function Login() {
             footerActionText="Register"
             footerLinkTo="/register"
         >
+            <GoogleAuthButton label="Continue with Google" onError={(msg) => setError(msg)} />
+
             {info && (
                 <div className={loginStyles.infoBanner} role="alert">
                     {info}

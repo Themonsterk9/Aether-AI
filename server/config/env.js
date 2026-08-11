@@ -22,6 +22,10 @@ module.exports = {
     CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
     SERVER_URL: process.env.SERVER_URL || 'http://localhost:5002',
 
+    BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+    BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'kgsdhakar8107@gmail.com',
+    BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Aether AI',
+
     SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
     SMTP_SECURE: process.env.SMTP_SECURE === 'true',

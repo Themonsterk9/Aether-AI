@@ -10,40 +10,60 @@ const loginAlertTemplate = require('./templates/loginAlert.template');
 class EmailService {
     constructor() {
         this.brevoClient = null;
+        this.senderEmail = process.env.BREVO_SENDER_EMAIL || 'kgsdhakar8107@gmail.com';
+        this.senderName = process.env.BREVO_SENDER_NAME || 'Aether AI';
         this._initBrevo();
     }
 
     _initBrevo() {
         const apiKey = process.env.BREVO_API_KEY;
-        const senderEmail = process.env.BREVO_SENDER_EMAIL || 'kgsdhakar8107@gmail.com';
-        const senderName = process.env.BREVO_SENDER_NAME || 'Aether AI';
+        this.senderEmail = process.env.BREVO_SENDER_EMAIL || 'kgsdhakar8107@gmail.com';
+        this.senderName = process.env.BREVO_SENDER_NAME || 'Aether AI';
 
         console.log(`[EmailService] Initializing Production Brevo API Engine...`);
-        console.log(`[EmailService] Sender Email: ${senderEmail}`);
-        console.log(`[EmailService] Sender Name:  ${senderName}`);
+        console.log(`[EmailService] Sender Email: ${this.senderEmail}`);
+        console.log(`[EmailService] Sender Name:  ${this.senderName}`);
 
         if (!apiKey) {
-            console.error(`[EmailService] ❌ CRITICAL: BREVO_API_KEY environment variable is missing!`);
-            throw new Error('BREVO_API_KEY environment variable is required for EmailService initialization.');
+            console.warn(`[EmailService] ⚠️ WARNING: BREVO_API_KEY environment variable is missing. Email dispatch will fail until BREVO_API_KEY is configured.`);
+            this.brevoClient = null;
+            return;
         }
 
-        this.brevoClient = new BrevoClient({ apiKey });
-        this.senderEmail = senderEmail;
-        this.senderName = senderName;
-        console.log(`[EmailService] ✅ Brevo API Client initialized successfully.`);
+        try {
+            this.brevoClient = new BrevoClient({ apiKey });
+            console.log(`[EmailService] ✅ Brevo API Client initialized successfully.`);
+        } catch (err) {
+            console.error(`[EmailService] ❌ Failed to initialize Brevo API Client:`, err.message);
+            this.brevoClient = null;
+        }
     }
 
     async testTransport() {
+        const apiKey = process.env.BREVO_API_KEY;
+        const isConfigured = !!apiKey && !!this.brevoClient;
+
         return {
             provider: 'Brevo API',
-            configured: !!this.brevoClient,
+            configured: isConfigured,
             senderEmail: this.senderEmail,
-            senderName: this.senderName
+            senderName: this.senderName,
+            missingVariables: !apiKey ? ['BREVO_API_KEY'] : []
         };
     }
 
     async sendEmail(payload) {
         const { to, subject, html, text, templateName } = payload;
+
+        // Re-check initialization if key was added dynamically
+        if (!this.brevoClient && process.env.BREVO_API_KEY) {
+            this._initBrevo();
+        }
+
+        if (!this.brevoClient || !process.env.BREVO_API_KEY) {
+            console.error(`[EmailService] ❌ CANNOT DISPATCH EMAIL to ${to}: BREVO_API_KEY environment variable is missing.`);
+            throw new Error('Email service configuration error: BREVO_API_KEY environment variable is required to send emails.');
+        }
 
         console.log(`[EmailService] ====================================================`);
         console.log(`[EmailService] OUTBOUND BREVO EMAIL DISPATCH`);
@@ -82,7 +102,7 @@ class EmailService {
             console.error(`[EmailService] ❌ BREVO DISPATCH REJECTED!`);
             console.error(`[EmailService] Recipient: ${to}`);
             console.error(`[EmailService] Status Code: ${statusCode}`);
-            console.error(`[EmailService] Response Body:`, JSON.stringify(body, null, 2));
+            console.error(`[EmailService] Response Body:`, typeof body === 'object' ? JSON.stringify(body, null, 2) : body);
             console.error(`[EmailService] ====================================================`);
 
             throw new Error(`Brevo API Email Dispatch Error (Status ${statusCode}): ${typeof body === 'object' ? JSON.stringify(body) : body}`);
@@ -90,7 +110,7 @@ class EmailService {
     }
 
     async sendRegistrationOTPEmail(user, otp) {
-        console.log(`[EmailService] Generating Registration Verification Code [${otp}] for ${user.email}`);
+        console.log(`[EmailService] Dispatching Registration Verification Code email to ${user.email}`);
         return await this.sendEmail({
             to: user.email,
             subject: 'Aether AI Verification Code',
@@ -112,7 +132,7 @@ class EmailService {
     }
 
     async sendOTPEmail(user, otp) {
-        console.log(`[EmailService] Generating Login 2FA Code [${otp}] for ${user.email}`);
+        console.log(`[EmailService] Dispatching Login 2FA Code email to ${user.email}`);
         return await this.sendEmail({
             to: user.email,
             subject: `${otp} is your Aether AI login code`,
@@ -125,7 +145,7 @@ class EmailService {
     async sendPasswordResetEmail(user, token) {
         const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
         const resetUrl = `${clientUrl}/reset-password?token=${token}`;
-        console.log(`[EmailService] Generating Password Reset Link for ${user.email}: ${resetUrl}`);
+        console.log(`[EmailService] Dispatching Password Reset Link email to ${user.email}`);
         
         return await this.sendEmail({
             to: user.email,

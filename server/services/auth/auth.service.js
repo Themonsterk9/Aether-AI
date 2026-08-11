@@ -7,7 +7,7 @@ const emailService = require('../email/email.service');
 
 // Helpers
 function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return crypto.randomInt(100000, 1000000).toString();
 }
 
 function hashToken(token) {
@@ -71,10 +71,14 @@ class AuthService {
                 await existingUser.save();
                 console.log(`[Registration] OTP stored in DB for ${email}. Expiry: 10m.`);
 
-                // Send registration OTP email asynchronously in background (non-blocking HTTP response)
-                emailService.sendRegistrationOTPEmail({ name, email }, otp)
-                    .catch(err => console.error('[Registration] Async email dispatch warning:', err.message));
-                console.log(`[Registration] Resent verification OTP to ${email}`);
+                // Send registration OTP email synchronously & await Brevo response
+                try {
+                    await emailService.sendRegistrationOTPEmail({ name, email }, otp);
+                } catch (emailErr) {
+                    console.error('[Registration] Verification email dispatch failed:', emailErr.message);
+                    throw new Error(`Account created, but verification email could not be sent: ${emailErr.message}`);
+                }
+                console.log(`[Registration] Resent verification OTP email to ${email}`);
 
                 return {
                     requiresOTP: true,
@@ -101,9 +105,13 @@ class AuthService {
 
         console.log(`[Registration] User created: ${email}. OTP stored in DB. Expiry: 10m.`);
 
-        // Send registration OTP email asynchronously in background (non-blocking HTTP response)
-        emailService.sendRegistrationOTPEmail({ name, email }, otp)
-            .catch(err => console.error('[Registration] Async email dispatch warning:', err.message));
+        // Send registration OTP email synchronously & await Brevo response
+        try {
+            await emailService.sendRegistrationOTPEmail({ name, email }, otp);
+        } catch (emailErr) {
+            console.error('[Registration] Email dispatch failed:', emailErr.message);
+            throw new Error(`Account created, but verification email could not be sent: ${emailErr.message}`);
+        }
 
         return {
             requiresOTP: true,
@@ -210,9 +218,13 @@ class AuthService {
             user.registrationOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
 
-            // Send registration OTP email asynchronously in background
-            emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp)
-                .catch(err => console.error('[Login] Async email dispatch warning:', err.message));
+            // Send registration OTP email synchronously & await response
+            try {
+                await emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp);
+            } catch (emailErr) {
+                console.error('[Login] Registration email dispatch failed:', emailErr.message);
+                throw new Error(`Your account is unverified, but verification email could not be sent: ${emailErr.message}`);
+            }
 
             return {
                 requiresOTP: true,
@@ -233,9 +245,13 @@ class AuthService {
         user.otpResendWindowStart = new Date();
         await user.save();
 
-        // Send OTP email asynchronously in background (non-blocking HTTP response)
-        emailService.sendOTPEmail({ name: user.name, email: user.email }, otp)
-            .catch(err => console.error('[Login] Async 2FA email dispatch warning:', err.message));
+        // Send OTP email synchronously & await Brevo response
+        try {
+            await emailService.sendOTPEmail({ name: user.name, email: user.email }, otp);
+        } catch (emailErr) {
+            console.error('[Login] 2FA email dispatch failed:', emailErr.message);
+            throw new Error(`Login code generated, but email delivery failed: ${emailErr.message}`);
+        }
 
         return {
             requiresOTP: true,
@@ -321,16 +337,26 @@ class AuthService {
             user.registrationOTP = hashedOTP;
             user.registrationOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
-            emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp)
-                .catch(err => console.error('[Resend OTP] Async dispatch warning:', err.message));
-            console.log(`[Resend OTP] Resent Registration OTP [${otp}] to ${email}`);
+
+            try {
+                await emailService.sendRegistrationOTPEmail({ name: user.name, email: user.email }, otp);
+            } catch (emailErr) {
+                console.error('[Resend OTP] Registration email dispatch failed:', emailErr.message);
+                throw new Error(`Failed to resend verification code: ${emailErr.message}`);
+            }
+            console.log(`[Resend OTP] Resent Registration OTP email to ${email}`);
         } else {
             user.loginOTP = hashedOTP;
             user.loginOTPExpires = new Date(Date.now() + OTP_EXPIRY_MS);
             await user.save();
-            emailService.sendOTPEmail({ name: user.name, email: user.email }, otp)
-                .catch(err => console.error('[Resend OTP] Async dispatch warning:', err.message));
-            console.log(`[Resend OTP] Resent 2FA Login OTP [${otp}] to ${email}`);
+
+            try {
+                await emailService.sendOTPEmail({ name: user.name, email: user.email }, otp);
+            } catch (emailErr) {
+                console.error('[Resend OTP] 2FA email dispatch failed:', emailErr.message);
+                throw new Error(`Failed to resend 2FA login code: ${emailErr.message}`);
+            }
+            console.log(`[Resend OTP] Resent 2FA Login OTP email to ${email}`);
         }
 
         return { message: 'A new verification code has been sent to your email.' };

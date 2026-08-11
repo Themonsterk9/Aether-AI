@@ -66,6 +66,27 @@ router.post('/forgot-password',
     authController.forgotPassword
 );
 
+// POST /verify-reset-otp
+router.post('/verify-reset-otp',
+    otpLimiter,
+    [
+        body('email').isEmail().withMessage('Valid email is required'),
+        body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits').isNumeric().withMessage('OTP must be numeric')
+    ],
+    validationMiddleware,
+    authController.verifyResetOTP
+);
+
+// POST /resend-reset-otp
+router.post('/resend-reset-otp',
+    otpLimiter,
+    [
+        body('email').isEmail().withMessage('Valid email is required')
+    ],
+    validationMiddleware,
+    authController.resendResetOTP
+);
+
 // POST /reset-password
 router.post('/reset-password',
     [

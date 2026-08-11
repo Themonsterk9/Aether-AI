@@ -156,6 +156,33 @@ class EmailService {
         });
     }
 
+    async sendPasswordResetOTPEmail(user, otp) {
+        console.log(`[EmailService] Dispatching Password Reset OTP email to ${user.email}`);
+        const html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0f172a;color:#f8fafc;border-radius:16px;border:1px solid #1e293b">
+            <div style="text-align:center;margin-bottom:24px">
+                <h1 style="font-size:20px;font-weight:800;color:#fff;margin:0 0 4px">Aether AI</h1>
+                <p style="font-size:13px;color:#94a3b8;margin:0">Password Reset Verification</p>
+            </div>
+            <p style="font-size:14px;color:#cbd5e1;line-height:1.5">Hello ${user.name || 'User'},</p>
+            <p style="font-size:14px;color:#cbd5e1;line-height:1.5">Your verification code to reset your password is:</p>
+            <div style="text-align:center;margin:28px 0">
+                <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#818cf8;background:rgba(99,102,241,0.12);padding:12px 24px;border-radius:12px;border:1px solid rgba(99,102,241,0.25);display:inline-block">${otp}</span>
+            </div>
+            <p style="font-size:13px;color:#94a3b8;line-height:1.5;text-align:center">This OTP expires in <strong>15 minutes</strong>.</p>
+            <hr style="border:none;border-top:1px solid #1e293b;margin:24px 0" />
+            <p style="font-size:12px;color:#64748b;line-height:1.4;text-align:center;margin:0">If you did not request a password reset, you can safely ignore this email.</p>
+        </div>`;
+
+        return await this.sendEmail({
+            to: user.email,
+            subject: `${otp} is your Aether AI password reset code`,
+            templateName: 'passwordResetOTP.template',
+            html,
+            text: `Aether AI Password Reset Verification\n\nYour verification code is: ${otp}\n\nThis OTP expires in 15 minutes.\n\nIf you did not request a password reset, you can safely ignore this email.`
+        });
+    }
+
     async sendPasswordChangedEmail(user) {
         console.log(`[EmailService] Sending Password Changed notification to ${user.email}`);
         return await this.sendEmail({

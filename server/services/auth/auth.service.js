@@ -493,8 +493,59 @@ class AuthService {
     async forgotPassword(email) {
         const user = await User.findOne({ email });
         if (!user) {
-            return { message: 'If an account with that email exists, a reset link has been sent.' };
+            return { message: 'If an account with that email exists, a 6-digit verification code has been sent.' };
         }
+
+        const otp = generateOTP();
+        const hashedOTP = await bcrypt.hash(otp, 10);
+        const now = Date.now();
+
+        user.resetPasswordOTP = hashedOTP;
+        user.resetPasswordOTPExpires = new Date(now + RESET_EXPIRY_MS);
+        user.resetPasswordOTPAttempts = 0;
+        user.resetPasswordOTPResendWindowStart = new Date(now);
+        await user.save();
+
+        try {
+            await emailService.sendPasswordResetOTPEmail({ name: user.name, email: user.email }, otp);
+            console.log(`[ForgotPassword] Password reset OTP email delivered via Brevo for ${email}`);
+        } catch (emailErr) {
+            console.error('[ForgotPassword] Password reset OTP dispatch failed:', emailErr.message);
+        }
+
+        return { message: 'If an account with that email exists, a 6-digit verification code has been sent.' };
+    }
+
+    async verifyResetOTP(email, otp) {
+        const user = await User.findOne({ email });
+        if (!user) throw new Error('Invalid request or verification code.');
+
+        if (!user.resetPasswordOTP || !user.resetPasswordOTPExpires) {
+            throw new Error('No password reset code found. Please request a new code.');
+        }
+
+        if (user.resetPasswordOTPExpires < new Date()) {
+            user.resetPasswordOTP = null;
+            user.resetPasswordOTPExpires = null;
+            await user.save();
+            throw new Error('Verification code has expired. Please request a new code.');
+        }
+
+        if ((user.resetPasswordOTPAttempts || 0) >= 5) {
+            throw new Error('Too many failed attempts. Please request a new code.');
+        }
+
+        const isValid = await bcrypt.compare(otp, user.resetPasswordOTP);
+        if (!isValid) {
+            user.resetPasswordOTPAttempts = (user.resetPasswordOTPAttempts || 0) + 1;
+            await user.save();
+            throw new Error('Invalid verification code. Please check your email and try again.');
+        }
+
+        // Consume OTP and issue single-use reset authorization token
+        user.resetPasswordOTP = null;
+        user.resetPasswordOTPExpires = null;
+        user.resetPasswordOTPAttempts = 0;
 
         const rawToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = hashToken(rawToken);
@@ -503,14 +554,43 @@ class AuthService {
         user.resetPasswordExpires = new Date(Date.now() + RESET_EXPIRY_MS);
         await user.save();
 
-        try {
-            await emailService.sendPasswordResetEmail({ name: user.name, email: user.email }, rawToken);
-            console.log(`[ForgotPassword] Password reset email successfully delivered via Brevo for ${email}`);
-        } catch (emailErr) {
-            console.error('[ForgotPassword] Password reset email dispatch failed:', emailErr.message);
+        return {
+            resetToken: rawToken,
+            message: 'Verification successful. You may now set your new password.'
+        };
+    }
+
+    async resendResetOTP(email) {
+        const user = await User.findOne({ email });
+        if (!user) return { message: 'If an account exists, a new code was sent.' };
+
+        const now = Date.now();
+        if (user.resetPasswordOTPResendWindowStart) {
+            const elapsed = now - user.resetPasswordOTPResendWindowStart.getTime();
+            if (elapsed < OTP_RESEND_COOLDOWN_MS) {
+                const secondsLeft = Math.ceil((OTP_RESEND_COOLDOWN_MS - elapsed) / 1000);
+                throw new Error(`Please wait ${secondsLeft}s before requesting a new verification code.`);
+            }
         }
 
-        return { message: 'If an account with that email exists, a reset link has been sent.' };
+        const otp = generateOTP();
+        const hashedOTP = await bcrypt.hash(otp, 10);
+
+        user.resetPasswordOTP = hashedOTP;
+        user.resetPasswordOTPExpires = new Date(now + RESET_EXPIRY_MS);
+        user.resetPasswordOTPAttempts = 0;
+        user.resetPasswordOTPResendWindowStart = new Date(now);
+        await user.save();
+
+        try {
+            await emailService.sendPasswordResetOTPEmail({ name: user.name, email: user.email }, otp);
+            console.log(`[ResendResetOTP] Resent password reset OTP email to ${email}`);
+        } catch (emailErr) {
+            console.error('[ResendResetOTP] Email dispatch failed:', emailErr.message);
+            throw new Error(`Failed to resend reset code: ${emailErr.message}`);
+        }
+
+        return { message: 'New OTP sent successfully to your email.' };
     }
 
     async resetPassword(token, newPassword) {
@@ -525,12 +605,14 @@ class AuthService {
         });
 
         if (!user) {
-            throw new Error('Password reset link is invalid or has expired.');
+            throw new Error('Password reset authorization is invalid or has expired. Please verify your OTP again.');
         }
 
         user.password = await bcrypt.hash(newPassword, 12);
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
+        user.resetPasswordOTP = null;
+        user.resetPasswordOTPExpires = null;
         user.loginOTP = null;
         user.loginOTPExpires = null;
         await user.save();
@@ -538,7 +620,7 @@ class AuthService {
         emailService.sendPasswordChangedEmail({ name: user.name, email: user.email })
             .catch(err => console.error('[PasswordChanged] Email error:', err.message));
 
-        return { message: 'Password reset successfully. You can now log in with your new password.' };
+        return { message: 'Password updated successfully. You can now sign in with your new password.' };
     }
 
     async logout() {

@@ -32,6 +32,16 @@ class AuthService {
         return response.data;
     }
 
+    async verifyResetOTP(email, otp) {
+        const response = await api.post('/auth/verify-reset-otp', { email, otp });
+        return response.data;
+    }
+
+    async resendResetOTP(email) {
+        const response = await api.post('/auth/resend-reset-otp', { email });
+        return response.data;
+    }
+
     async resetPassword(token, password) {
         const response = await api.post('/auth/reset-password', { token, password });
         return response.data;

@@ -65,6 +65,26 @@ class AuthController {
         }
     }
 
+    async verifyResetOTP(req, res) {
+        try {
+            const { email, otp } = req.body;
+            const result = await authService.verifyResetOTP(email, otp);
+            return res.status(200).json({ success: true, message: result.message, data: result });
+        } catch (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+    }
+
+    async resendResetOTP(req, res) {
+        try {
+            const { email } = req.body;
+            const result = await authService.resendResetOTP(email);
+            return res.status(200).json({ success: true, message: result.message });
+        } catch (error) {
+            return res.status(429).json({ success: false, message: error.message });
+        }
+    }
+
     async resetPassword(req, res) {
         try {
             const { token, password } = req.body;

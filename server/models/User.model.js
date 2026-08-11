@@ -55,9 +55,13 @@ const userSchema = new mongoose.Schema(
         otpResendCount: { type: Number, default: 0 },
         otpResendWindowStart: { type: Date, default: null },
 
-        // Password Reset
+        // Password Reset (OTP & Token Authorization)
         resetPasswordToken: { type: String, default: null },
         resetPasswordExpires: { type: Date, default: null },
+        resetPasswordOTP: { type: String, default: null },
+        resetPasswordOTPExpires: { type: Date, default: null },
+        resetPasswordOTPAttempts: { type: Number, default: 0 },
+        resetPasswordOTPResendWindowStart: { type: Date, default: null },
 
         // Session Tracking
         lastLogin: { type: Date, default: null },
@@ -81,5 +85,6 @@ userSchema.index({ email: 1 });
 userSchema.index({ googleId: 1 }, { sparse: true });
 userSchema.index({ registrationOTPExpires: 1 });
 userSchema.index({ loginOTPExpires: 1 });
+userSchema.index({ resetPasswordOTPExpires: 1 });
 
 module.exports = mongoose.model("User", userSchema);

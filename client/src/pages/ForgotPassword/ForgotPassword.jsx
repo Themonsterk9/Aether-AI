@@ -77,7 +77,7 @@ export default function ForgotPassword() {
         try {
             setLoading(true);
             const res = await authService.forgotPassword(email.trim());
-            toast.success(res.message || 'OTP sent successfully!');
+            toast.success(res.message || 'OTP sent successfully. Check your inbox.');
             setStep(2);
             setCountdown(60);
             setCanResend(false);

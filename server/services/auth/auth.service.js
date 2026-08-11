@@ -497,20 +497,27 @@ class AuthService {
         }
 
         const otp = generateOTP();
-        const hashedOTP = await bcrypt.hash(otp, 10);
+        const hashedOTP = await bcrypt.hash(otp, 6);
         const now = Date.now();
 
-        user.resetPasswordOTP = hashedOTP;
-        user.resetPasswordOTPExpires = new Date(now + RESET_EXPIRY_MS);
-        user.resetPasswordOTPAttempts = 0;
-        user.resetPasswordOTPResendWindowStart = new Date(now);
-        await user.save();
+        await User.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    resetPasswordOTP: hashedOTP,
+                    resetPasswordOTPExpires: new Date(now + RESET_EXPIRY_MS),
+                    resetPasswordOTPAttempts: 0,
+                    resetPasswordOTPResendWindowStart: new Date(now)
+                }
+            }
+        );
 
         try {
             await emailService.sendPasswordResetOTPEmail({ name: user.name, email: user.email }, otp);
             console.log(`[ForgotPassword] Password reset OTP email delivered via Brevo for ${email}`);
         } catch (emailErr) {
             console.error('[ForgotPassword] Password reset OTP dispatch failed:', emailErr.message);
+            throw new Error(`Failed to send verification email: ${emailErr.message}`);
         }
 
         return { message: 'If an account with that email exists, a 6-digit verification code has been sent.' };
@@ -525,9 +532,7 @@ class AuthService {
         }
 
         if (user.resetPasswordOTPExpires < new Date()) {
-            user.resetPasswordOTP = null;
-            user.resetPasswordOTPExpires = null;
-            await user.save();
+            await User.updateOne({ _id: user._id }, { $set: { resetPasswordOTP: null, resetPasswordOTPExpires: null } });
             throw new Error('Verification code has expired. Please request a new code.');
         }
 
@@ -537,22 +542,26 @@ class AuthService {
 
         const isValid = await bcrypt.compare(otp, user.resetPasswordOTP);
         if (!isValid) {
-            user.resetPasswordOTPAttempts = (user.resetPasswordOTPAttempts || 0) + 1;
-            await user.save();
+            await User.updateOne({ _id: user._id }, { $inc: { resetPasswordOTPAttempts: 1 } });
             throw new Error('Invalid verification code. Please check your email and try again.');
         }
 
         // Consume OTP and issue single-use reset authorization token
-        user.resetPasswordOTP = null;
-        user.resetPasswordOTPExpires = null;
-        user.resetPasswordOTPAttempts = 0;
-
         const rawToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = hashToken(rawToken);
 
-        user.resetPasswordToken = hashedToken;
-        user.resetPasswordExpires = new Date(Date.now() + RESET_EXPIRY_MS);
-        await user.save();
+        await User.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    resetPasswordOTP: null,
+                    resetPasswordOTPExpires: null,
+                    resetPasswordOTPAttempts: 0,
+                    resetPasswordToken: hashedToken,
+                    resetPasswordExpires: new Date(Date.now() + RESET_EXPIRY_MS)
+                }
+            }
+        );
 
         return {
             resetToken: rawToken,
@@ -574,13 +583,19 @@ class AuthService {
         }
 
         const otp = generateOTP();
-        const hashedOTP = await bcrypt.hash(otp, 10);
+        const hashedOTP = await bcrypt.hash(otp, 6);
 
-        user.resetPasswordOTP = hashedOTP;
-        user.resetPasswordOTPExpires = new Date(now + RESET_EXPIRY_MS);
-        user.resetPasswordOTPAttempts = 0;
-        user.resetPasswordOTPResendWindowStart = new Date(now);
-        await user.save();
+        await User.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    resetPasswordOTP: hashedOTP,
+                    resetPasswordOTPExpires: new Date(now + RESET_EXPIRY_MS),
+                    resetPasswordOTPAttempts: 0,
+                    resetPasswordOTPResendWindowStart: new Date(now)
+                }
+            }
+        );
 
         try {
             await emailService.sendPasswordResetOTPEmail({ name: user.name, email: user.email }, otp);

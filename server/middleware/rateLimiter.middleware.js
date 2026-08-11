@@ -9,11 +9,11 @@ const loginLimiter = rateLimit({
 });
 
 const forgotPasswordLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 5,
+    windowMs: 15 * 60 * 1000,
+    max: 10,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, message: 'Too many password reset requests. Please try again in 1 hour.' }
+    message: { success: false, message: 'Too many password reset requests. Please try again in 15 minutes.' }
 });
 
 const otpLimiter = rateLimit({

@@ -49,10 +49,10 @@ export default function GoogleAuthButton({ label = "Continue with Google", onErr
     const handleClick = () => {
         if (loading) return;
 
-        // Check if VITE_GOOGLE_CLIENT_ID is configured or if dummy key
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        if (!clientId || clientId.includes("dummy")) {
-            toast.info("Google OAuth: Set VITE_GOOGLE_CLIENT_ID in environment variables to enable live Google Sign-In.");
+        // Check if VITE_GOOGLE_CLIENT_ID is configured or fallback to official Client ID
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1052970200604-ipi4glideftlg8dldb8030n4acmun7lk.apps.googleusercontent.com";
+        if (!clientId) {
+            toast.info("Google OAuth: Client ID not configured.");
             return;
         }
 

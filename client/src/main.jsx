@@ -14,7 +14,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import ErrorBoundary from "./components/Common/ErrorBoundary";
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1000000000000-dummygoogleclientid.apps.googleusercontent.com";
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "1052970200604-ipi4glideftlg8dldb8030n4acmun7lk.apps.googleusercontent.com";
 
 // Global Unhandled Promise Rejection Handler
 window.addEventListener("unhandledrejection", (event) => {

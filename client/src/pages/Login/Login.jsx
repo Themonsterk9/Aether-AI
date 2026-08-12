@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 
+import authService from '../../services/auth.service';
 import GoogleAuthButton from '../../components/Auth/GoogleAuthButton';
 import AuthCard from '../../components/Auth/AuthCard';
 import styles from '../../components/Auth/AuthCard.module.css';
